@@ -6,9 +6,11 @@
         w = P(z − α ∇F_μ(z)),  z ← z + λ (w − z),  λ ∈ [0,1]
     · GPSR-Basic 型: α 在沿投影弧的 Armijo 回溯中收缩(最速下降式), 无 BB 更新;
     · GPSR-BB 型:   α 取 Barzilai-Borwein 步长 sᵀs/sᵀy (截断到 [α_min, α_max]),
-                    线搜索 λ 用非单调 Armijo(文献[1]提到非单调变体更省时),
-                    等价于文献[1] "monotone/nonmonotone GPSR-BB" 在一般光滑凸问题上的推广。
-终止: GPSR 投影间隙 ||P(z−∇F) − z||_∞ ≤ tolP, 或||Δz||_∞ ≤ tolX / 目标相对变化 ≤ tolF。
+                    线搜索 λ 用非单调 Armijo。
+                    说明: 文献[1]对二次 BCQP 用闭式 λ 且报告其单调变体略优于
+                    非单调变体; 本项目的目标函数非二次, 非单调 Armijo 是
+                    通用问题的工程选择(与文献[1]的非单调变体同思路)。
+终止: GPSR 投影间隙 ||P(z−∇F) − z||_∞ ≤ tolP, 或 ||Δz||_∞ ≤ tolX / 目标相对变化 ≤ tolF。
 """
 import numpy as np
 import time
@@ -24,12 +26,17 @@ def projection_gap(z, g, lo, hi):
 
 
 def bb_stepsize(s, y, amin=1e-10, amax=1e6, variant=1):
-    """Barzilai-Borwein 步长: BB1 = sᵀs/sᵀy, BB2 = sᵀy/yᵀy."""
+    """Barzilai-Borwein 步长: BB1 = sᵀs/sᵀy, BB2 = sᵀy/yᵀy.
+
+    与文献[1]一致: sᵀy ≤ 0 (曲率信息失效) 时取 α_max。
+    """
     sy = float(np.dot(s, y))
     ss = float(np.dot(s, s))
     yy = float(np.dot(y, y))
+    if sy <= 0.0 or abs(sy) < 1e-300:
+        return float(amax)
     if variant == 1:
-        a = ss / sy if abs(sy) > 1e-300 else amax
+        a = ss / sy
     else:
         a = sy / yy if abs(yy) > 1e-300 else amax
     return float(np.clip(a, amin, amax))
