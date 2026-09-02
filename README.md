@@ -32,9 +32,10 @@ signal-reconstruction/
 │   │   ├── make_figures.py      #   收敛曲线 / 视觉对比 / PSNR 汇总图
 │   │   └── results/             #   表 (csv/txt), 图 (png), 恢复图 (tif, 不入库)
 │   └── problem2/            # 问题二实验
-│       ├── check_potentials.py  #   5 种势函数梯度 FD 校验 + 凸性抽查
-│       ├── tune_potentials.py   #   (α, β) 独立标定 + PSNR-α 敏感性
-│       ├── run_problem2.py      #   ★ 主实验 (3 图 × {30%,50%} × 2 种子 × 5 势函数)
+│       ├── check_potentials.py  #   5 种势函数梯度 FD 校验(20样本) + 凸性抽查
+│       ├── tune_potentials.py   #   (α, β) 独立标定(v2: β 至 640, 选优优先收敛解)
+│       ├── merge_tuning.py      #   并行调参日志/参数合并 → problem2_params.json
+│       ├── run_problem2.py      #   ★ 主实验 (3图×{30%,50%}×2种子×5势函数, 含 OOS 汇总)
 │       ├── make_figures2.py     #   PSNR-α 曲线 / 指标条形图 / 恢复对比图
 │       └── results/             #   表 (csv/json/txt), 图 (png)
 └── docs/
@@ -77,11 +78,20 @@ python exp/problem2/make_figures2.py         # 图
 ## 主要结论
 
 - 问题一：12 图 × 2 噪声等级 × 3 种子共 72 算例全部收敛；30%/50% 平均 PSNR
-  36.39 / 33.57 dB，平均迭代 86/89 次，平均用时 2.6/4.2 s；BB 步长相比
-  GPSR-Basic 提速约 85 倍；Lena 30% 达 37.41 dB。
-- 问题二：最优参数下 5 种势函数 PSNR 差距 ≤0.25 dB（恢复质量不敏感）；
-  $\sqrt{t^2+\alpha}$ 与 Huber 对 $\alpha$ 鲁棒且收敛快，$|t|^{\alpha}$（α<2）
-  导数无界导致上千步不收敛，$\log\cosh$/$|t|/\alpha-\log$ 在 α 偏大时正则失效。
+  36.38 / 33.56 dB，平均迭代 87/88 次，平均用时 2.8 / 4.6 s；BB 步长相比
+  GPSR-Basic 迭代数降低约 65–97 倍（时间 69–92 倍）；Lena 30% 达 37.41 dB。
+- 问题二（v2 调参协议，β 网格扩至 640）：最优参数下 5 种势函数 PSNR 差距
+  ≤0.19 dB（恢复质量不敏感，out-of-sample 趋势一致）；$\sqrt{t^2+\alpha}$
+  与 Huber 对 $\alpha$ 鲁棒且收敛快；$|t|^{\alpha}$（α<2）导数无界导致
+  1500 步不收敛（截断平台，PSNR 仅再 +0.003 dB）；$\log\cosh$ /
+  $|t|/\alpha-\log$ 在 α 偏大时正则失效。
+
+## 审查修复记录
+
+Zcode 审查报告所列为 19 项，全部处理完毕（含 1 🔴 / 6 🟠 / 12 🟡），
+详见 `docs/CHANGES_after_review.md`。核心修复：GPSR-Basic 对照数据重跑至
+真实收敛、PSNR-α 曲线解析修复、β 网格扩展消除调参伪影、AMF 对齐论文语义、
+softplus 实现修正、初值统一、out-of-sample 汇总。
 
 ## 参考文献
 
