@@ -38,36 +38,37 @@ def main():
             y, _ = add_salt_and_pepper(x, p=r / 2, q=r / 2, rng=rng)
             cand, y_amf, _ = adaptive_median_filter(y, r=r)
             lines.append(f"\n== {img} r={r:.0%} #cand={cand.sum()} ==")
-            # 1) 求解器对比 (μ=1, 含数据项)
-            m, u0 = base(y, cand, x)
+            # 1) 求解器对比 (μ=1, 含数据项); Basic 用 maxit=10000 以观察真实收敛
+            m = Phase2Model(y, cand, beta=BETA, alpha=ALPHA, smooth="sqrt")
             t0 = time.perf_counter()
-            res = gpsr_basic(m, u0, mu=1.0, tolP=1e-2, maxit=1500)
+            res = gpsr_basic(m, y_amf[cand], mu=1.0, tolP=1e-2, maxit=10000)
             res["time"] = time.perf_counter() - t0
             lines.append(f"  [Basic]    {summary(res, y, cand, x)}")
-            m, u0 = base(y, cand, x)
+            m = Phase2Model(y, cand, beta=BETA, alpha=ALPHA, smooth="sqrt")
             t0 = time.perf_counter()
-            res = gpsr_bb(m, u0, mu=1.0, tolP=1e-2, maxit=1500)
+            res = gpsr_bb(m, y_amf[cand], mu=1.0, tolP=1e-2, maxit=1500)
             res["time"] = time.perf_counter() - t0
             lines.append(f"  [BB1]      {summary(res, y, cand, x)}")
-            m, u0 = base(y, cand, x)
+            m = Phase2Model(y, cand, beta=BETA, alpha=ALPHA, smooth="sqrt")
             t0 = time.perf_counter()
-            res = gpsr_bb(m, u0, mu=1.0, tolP=1e-2, maxit=1500, bb_variant=2)
+            res = gpsr_bb(m, y_amf[cand], mu=1.0, tolP=1e-2, maxit=1500, bb_variant=2)
             res["time"] = time.perf_counter() - t0
             lines.append(f"  [BB2]      {summary(res, y, cand, x)}")
             # 2) 光滑参数策略 (BB1)
-            m, u0 = base(y, cand, x)
+            m = Phase2Model(y, cand, beta=BETA, alpha=ALPHA, smooth="sqrt")
             t0 = time.perf_counter()
-            res = solve_with_continuation(m, u0, mu_seq=(1.0, 1e-1, 1e-2, 1e-3),
+            res = solve_with_continuation(m, y_amf[cand], mu_seq=(1.0, 1e-1, 1e-2, 1e-3),
                                           tolP=1e-2, maxit_each=1500)
             res["time"] = time.perf_counter() - t0
             lines.append(f"  [续延μ]    {summary(res, y, cand, x)}")
             # 3) 数据项有无 (BB1, μ=1)
-            m, u0 = base(y, cand, x)
+            m = Phase2Model(y, cand, beta=BETA, alpha=ALPHA, smooth="sqrt")
             m.with_data = False
             t0 = time.perf_counter()
-            res = gpsr_bb(m, u0, mu=1.0, tolP=1e-2, maxit=1500)
+            res = gpsr_bb(m, y_amf[cand], mu=1.0, tolP=1e-2, maxit=1500)
             res["time"] = time.perf_counter() - t0
             lines.append(f"  [无数据项] {summary(res, y, cand, x)}")
+            print(lines[-1] if lines[-1].startswith("==") else lines[-5], flush=True)
     out = "\n".join(lines)
     print(out)
     with open(os.path.join(TAB, "problem1_strategy.txt"), "w", encoding="utf-8") as f:
