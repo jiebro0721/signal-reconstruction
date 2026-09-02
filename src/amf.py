@@ -1,9 +1,10 @@
 """第一阶段: 自适应中值滤波器 (AMF) —— 文献[2] Algorithm I 的向量化实现。
 
 对每个像素 (i,j)，窗口从 w=3 开始, 若窗口内 s_min < s_med < s_max 则停止扩大,
-否则 w += 2 直至 w_max(按噪声等级查文献[2]表1)。随后:
-    - 若 s_min^W < y_ij < s_max^W: 判为未污染像素;
-    - 否则: 判为噪声候选, 并以 s_med^W 作为 AMF 输出值(供第二阶段作为初值)。
+否则 w += 2 直至 w_max(按噪声等级查文献[2]表1)。随后(严格按文献步骤 3-5):
+    - 若某级窗口满足 s_min < s_med < s_max: 用该窗口检查 s_min < y_ij < s_max,
+      成立则判为未污染像素, 否则判为噪声候选(输出为该窗口中值);
+    - 若窗口耗尽(w 达 w_max 仍不满足): 无条件判为噪声候选, 输出 w_max 窗口中值。
 
 边界像素: 采用反射 (reflect) 扩展, 等价于对称边界条件, 影响很小。
 """
@@ -73,8 +74,12 @@ def adaptive_median_filter(y, r=0.3, wmax=None, verbose=False):
         lo, med, hi = _window_stats(y, wmax, mode="reflect")
         smin[active], smed[active], smax[active] = lo[active], med[active], hi[active]
 
-    # 判定: 最终窗口 W 下, s_min < y < s_max 则未污染, 否则为噪声候选
-    cand = ~((smin < y) & (y < smax))
+    # 判定(严格按文献[2] Algorithm I 步骤 3-5):
+    #   - 步骤3: 若某级窗口满足 smin<smed<smax, 转步骤5 —— 用该窗口(min,max)检查 y;
+    #   - 步骤4: 窗口耗尽(w 超过 w_max 仍不满足) —— 无条件判为噪声候选并替换为中值;
+    #   - 步骤5: s_min < y < s_max 则非候选, 否则为候选。
+    exhausted = active.copy()               # 从未获得满足窗口的像素(窗口耗尽)
+    cand = exhausted | ~((smin < y) & (y < smax))
     y_amf = y.copy()
     y_amf[cand] = smed[cand]
     return cand, y_amf, dict(smin=smin, smed=smed, smax=smax)
