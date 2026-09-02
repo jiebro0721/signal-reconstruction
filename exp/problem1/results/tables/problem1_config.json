@@ -1,0 +1,26 @@
+{
+  "beta": 40.0,
+  "alpha": 300.0,
+  "mu": 1.0,
+  "tolP": 0.01,
+  "maxit": 1500,
+  "seeds": [
+    2026,
+    7,
+    42
+  ],
+  "images": [
+    "cameraman.tif",
+    "house.tif",
+    "jetplane.tif",
+    "lake.tif",
+    "lena_gray_512.tif",
+    "livingroom.tif",
+    "mandril_gray.tif",
+    "peppers_gray.tif",
+    "pirate.tif",
+    "walkbridge.tif",
+    "woman_blonde.tif",
+    "woman_darkhair.tif"
+  ]
+}
