@@ -41,15 +41,18 @@ def parse_tuning():
     txt = open(os.path.join(TAB, "problem2_tuning.txt"), encoding="utf-8").read()
     out = {}
     cur_r = None
+    n_matches = 0
     for line in txt.splitlines():
         m = re.match(r"== r=(\d+)%", line)
         if m:
             cur_r = float(m.group(1)) / 100.0
             continue
-        m = re.match(r"\s*\[(\w+)\]\s+alpha=([0-9.eE+-]+)\s+beta=40\s+it=(\d+).*PSNR=([0-9.]+)", line)
+        m = re.match(r"\s*\[\s*(\w+)\s*\]\s+alpha=\s*([0-9.eE+-]+)\s+beta=40\s+it=\s*(\d+).*PSNR=\s*([0-9.]+)", line)
         if m and cur_r is not None:
             out.setdefault((m.group(1), cur_r), []).append(
                 (float(m.group(2)), float(m.group(4))))
+            n_matches += 1
+    assert n_matches > 0, "调参日志解析行数为 0 (正则或日志格式错误)"
     return out
 
 
@@ -77,15 +80,21 @@ def fig_metrics():
     rows = list(csv.DictReader(open(os.path.join(TAB, "problem2_summary.csv"),
                                     encoding="utf-8-sig")))
     pots = ["sqrt", "power", "logcosh", "log1", "huber"]
+    keys_def = [(0.3, "psnr_mean", "PSNR (dB)"), (0.3, "ssim_mean", "SSIM"),
+                (0.3, "it_mean", "Iterations")]
     fig, axes = plt.subplots(1, 3, figsize=(10.2, 3.0))
-    for r, ax, key, ylab in [(0.3, axes[0], "psnr_mean", "PSNR (dB)"),
-                             (0.3, axes[1], "ssim_mean", "SSIM"),
-                             (0.3, axes[2], "it_mean", "Iterations")]:
+    for ax, (r, key, ylab) in zip(axes, keys_def):
         sub = [float(q[key]) for q in rows if q["potential"] in pots and abs(float(q["r"]) - r) < 1e-9]
         ax.bar(pots, sub, color=[COLOR[p] for p in pots])
         ax.set_xticklabels([r"$\varphi_1$", r"$\varphi_2$", r"$\varphi_3$", r"$\varphi_4$", r"$\varphi_5$"])
         ax.set_ylabel(ylab); ax.set_title(f"r={r:.0%}, 3 图×2 种子均值")
         ax.grid(alpha=.3, axis="y")
+        if key != "it_mean":                 # y 轴截断以示出微小差异
+            lo = min(sub); hi = max(sub)
+            pad = max(0.06 * (hi - lo), 1e-3)
+            ax.set_ylim(lo - pad, hi + pad)
+        else:
+            ax.set_ylim(0, max(sub) * 1.15)
     fig.tight_layout()
     fig.savefig(os.path.join(FIG, "metrics_by_potential.png"), dpi=200)
     plt.close(fig)
