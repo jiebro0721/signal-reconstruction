@@ -1,0 +1,15 @@
+# 运行产物 / 大数据不入库 (测试图片已在仓库内, 恢复图为可复现实验产物, 不入库)
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
+
+# 大体积恢复图 / 掩膜 (表与图在 results/(tables|figures)/ 下入库)
+exp/problem1/results/restored/
+exp/problem2/results/restored/
+
+# 系统 / 编辑器
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
