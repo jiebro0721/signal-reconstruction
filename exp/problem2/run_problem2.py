@@ -63,7 +63,10 @@ def run_case(image, r, seed, params, save=False):
     y, _ = add_salt_and_pepper(x, p=r / 2, q=r / 2, rng=rng)
     cand, y_amf, _ = adaptive_median_filter(y, r=r)
     from amf import w_max_for_noise_level
+    from metrics import edge_mask
     wmax = w_max_for_noise_level(r)
+    em = edge_mask(x)
+    edge_frac = float(em.mean())
     rows = []
     for pot_ in params:
         alpha, beta = get_pv(params, pot_, r)
@@ -73,7 +76,7 @@ def run_case(image, r, seed, params, save=False):
         t_solve = time.perf_counter() - t0
         xh = y.copy(); xh[cand] = res["u"]
         rows.append(dict(image=image, r=r, seed=seed, potential=pot_,
-                         alpha=alpha, beta=beta, wmax=wmax,
+                         alpha=alpha, beta=beta, wmax=wmax, edge_frac=edge_frac,
                          it=int(res["it"]), t=t_solve,
                          psnr=psnr(x, xh), snr=snr(x, xh), mae=mae(x, xh),
                          ssim=ssim(x, xh), edge_psnr=edge_psnr(x, xh),
@@ -92,19 +95,24 @@ def main():
     with open(os.path.join(TAB, "problem2_full.csv"), "w", newline="", encoding="utf-8-sig") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
         w.writeheader(); w.writerows(rows)
-    # 汇总: potential x r
     keys = ["psnr", "snr", "ssim", "edge_psnr", "mae", "psnr_n", "it", "t"]
-    with open(os.path.join(TAB, "problem2_summary.csv"), "w", newline="", encoding="utf-8-sig") as f:
-        w = csv.writer(f)
-        w.writerow(["potential", "r"] + [f"{k}_mean" for k in keys] +
-                   [f"{k}_std" for k in keys] + ["alpha", "beta"])
-        for pot_ in params:
-            for r in RLEVELS:
-                sub = [q for q in rows if q["potential"] == pot_ and abs(q["r"] - r) < 1e-9]
-                vals = {k: [q[k] for q in sub] for k in keys}
-                a, b = get_pv(params, pot_, r)
-                w.writerow([pot_, r] + [float(np.mean(vals[k])) for k in keys] +
-                           [float(np.std(vals[k])) for k in keys] + [a, b])
+    # 汇总(全部图像) 与 汇总(排除标定集 Lena —— out-of-sample)
+    blocks = [("problem2_summary.csv", rows),
+              ("problem2_summary_oos.csv", [q for q in rows if q["image"] != "lena_gray_512.tif"])]
+    for fname, pool in blocks:
+        with open(os.path.join(TAB, fname), "w", newline="", encoding="utf-8-sig") as f:
+            w = csv.writer(f)
+            w.writerow(["potential", "r"] + [f"{k}_mean" for k in keys] +
+                       [f"{k}_std" for k in keys] + ["alpha", "beta"])
+            for pot_ in params:
+                for r in RLEVELS:
+                    sub = [q for q in pool if q["potential"] == pot_ and abs(q["r"] - r) < 1e-9]
+                    if not sub:
+                        continue
+                    vals = {k: [q[k] for q in sub] for k in keys}
+                    a, b = get_pv(params, pot_, r)
+                    w.writerow([pot_, r] + [float(np.mean(vals[k])) for k in keys] +
+                               [float(np.std(vals[k])) for k in keys] + [a, b])
     print("DONE")
 
 

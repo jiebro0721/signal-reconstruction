@@ -19,7 +19,7 @@ cand, y_amf, _ = adaptive_median_filter(y, r=0.3)
 for pot_, alpha in [("sqrt", 300.0), ("power", 1.4), ("logcosh", 0.1),
                     ("log1", 3.0), ("huber", 30.0)]:
     m = Phase2Model(y, cand, beta=40.0, alpha=alpha, smooth="sqrt", potential=pot_)
-    err = finite_diff_check(m, y_amf[cand], mu=1.0, eps=1e-5, n_sample=5)
+    err = finite_diff_check(m, y_amf[cand], mu=1.0, eps=1e-5, n_sample=20)
     res = gpsr_bb(m, y_amf[cand], mu=1.0, tolP=1e-2, maxit=1500)
     xh = y.copy(); xh[cand] = res["u"]
     # 凸性抽查: 中线凸性 f(0.5(u+v)) <= 0.5(f(u)+f(v))

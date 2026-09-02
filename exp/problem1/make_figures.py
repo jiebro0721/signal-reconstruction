@@ -25,7 +25,7 @@ plt.rcParams["axes.unicode_minus"] = False
 plt.rcParams["font.size"] = 9
 
 
-def fig_convergence(x, y, cand, y_amf, r, img):
+def fig_convergence(x, y, cand, y_amf, r, img, stem=None):
     m = Phase2Model(y, cand, beta=BETA, alpha=ALPHA, smooth="sqrt")
     res = gpsr_bb(m, y_amf[cand], mu=MU, tolP=1e-2, maxit=1500)
     xh = y.copy(); xh[cand] = res["u"]
@@ -40,7 +40,7 @@ def fig_convergence(x, y, cand, y_amf, r, img):
     axes[1].set_xlabel("iteration $k$"); axes[1].set_ylabel("relative obj. error")
     axes[1].grid(alpha=.3)
     fig.tight_layout()
-    fig.savefig(os.path.join(FIG, f"conv_{img[:-4]}_r{int(r*100)}.png"), dpi=200)
+    fig.savefig(os.path.join(FIG, f"conv_{stem}_r{int(r*100)}.png"), dpi=200)
     plt.close(fig)
     return res
 
@@ -67,14 +67,15 @@ def fig_visual(img, r, x, y, y_amf, xh, det=None):
 
 
 def main():
-    # 1) 收敛曲线: Lena 30%/50%
+    # 1) 收敛曲线: Lena 30%/50%, Cameraman 50%
     for img, r in [("lena_gray_512.tif", 0.3), ("lena_gray_512.tif", 0.5),
                    ("cameraman.tif", 0.5)]:
         x = load_gray(os.path.join(D, img))
         rng = np.random.default_rng(2026)
         y, _ = add_salt_and_pepper(x, p=r / 2, q=r / 2, rng=rng)
         cand, y_amf, _ = adaptive_median_filter(y, r=r)
-        res = fig_convergence(x, y, cand, y_amf, r, img[:-4])
+        stem = os.path.splitext(img)[0]
+        res = fig_convergence(x, y, cand, y_amf, r, stem, stem=stem)
         print(f"conv fig {img} r={r:.0%} IT={res['it']} conv={res['converged']}")
 
     # 2) 视觉对比: Lena/Cameraman/Peppers @30%,50%

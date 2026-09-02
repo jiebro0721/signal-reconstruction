@@ -16,7 +16,7 @@ IMG = os.path.join(ROOT, "data", "test_images", "lena_gray_512.tif")
 
 def run_one(x, y, cand, beta, mu=1e-3, solver="bb", maxit=4000):
     model = Phase2Model(y, cand, beta=beta, alpha=100.0, smooth="sqrt")
-    u0 = y[cand]
+    u0 = y_amf[cand]
     t0 = time.perf_counter()
     if solver == "bb":
         res = gpsr_bb(model, u0, mu=mu, tolP=1e-2, maxit=maxit)
@@ -55,7 +55,7 @@ def main():
     print("\n== 续延参数序列 (beta=5) ==")
     for seq in [(1.0,), (1.0, 1e-1), (1.0, 1e-1, 1e-2), (1.0, 1e-1, 1e-2, 1e-3)]:
         model = Phase2Model(y, cand, beta=5.0, alpha=100.0, smooth="sqrt")
-        u0 = y[cand]
+        u0 = y_amf[cand]
         t0 = time.perf_counter()
         res = solve_with_continuation(model, u0, mu_seq=seq, tolP=1e-2, maxit_each=2000)
         xh = y.copy(); xh[cand] = res["u"]
@@ -71,7 +71,7 @@ def main():
     print("\n== α 敏感性 (BB, mu=1, beta=5) ==")
     for alpha in [30.0, 100.0, 300.0]:
         model = Phase2Model(y, cand, beta=5.0, alpha=alpha, smooth="sqrt")
-        u0 = y[cand]
+        u0 = y_amf[cand]
         t0 = time.perf_counter()
         res = gpsr_bb(model, u0, mu=1.0, tolP=1e-2, maxit=1500)
         xh = y.copy(); xh[cand] = res["u"]

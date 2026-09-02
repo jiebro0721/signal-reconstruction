@@ -1,28 +1,28 @@
 
 == lena_gray_512.tif r=30% #cand=89759 ==
-  [Basic]    it= 1500 t= 47.67s PSNR= 37.364 SNR= 31.707 conv=False
-  [BB1]      it=   84 t=  2.83s PSNR= 37.373 SNR= 31.717 conv=True
-  [BB2]      it=   85 t=  2.69s PSNR= 37.373 SNR= 31.717 conv=True
-  [续延μ]    it=  168 t=  5.51s PSNR= 37.374 SNR= 31.717 conv=True
-  [无数据项] it=   69 t=  2.06s PSNR= 37.368 SNR= 31.712 conv=True
+  [Basic]    it= 7160 t=344.11s PSNR= 37.373 SNR= 31.717 conv=True
+  [BB1]      it=   74 t=  3.73s PSNR= 37.373 SNR= 31.717 conv=True
+  [BB2]      it=   76 t=  3.89s PSNR= 37.373 SNR= 31.717 conv=True
+  [续延μ]    it=  154 t=  7.86s PSNR= 37.374 SNR= 31.717 conv=True
+  [无数据项] it=   92 t=  4.46s PSNR= 37.368 SNR= 31.712 conv=True
 
 == lena_gray_512.tif r=50% #cand=134208 ==
-  [Basic]    it= 1500 t= 64.16s PSNR= 34.546 SNR= 28.889 conv=False
-  [BB1]      it=   88 t=  4.14s PSNR= 34.557 SNR= 28.900 conv=True
-  [BB2]      it=   92 t=  4.26s PSNR= 34.557 SNR= 28.900 conv=True
-  [续延μ]    it=  163 t=  8.01s PSNR= 34.557 SNR= 28.900 conv=True
-  [无数据项] it=   72 t=  3.02s PSNR= 34.562 SNR= 28.905 conv=True
+  [Basic]    it= 6661 t=434.69s PSNR= 34.557 SNR= 28.900 conv=True
+  [BB1]      it=   88 t=  6.26s PSNR= 34.557 SNR= 28.900 conv=True
+  [BB2]      it=  100 t=  6.86s PSNR= 34.557 SNR= 28.900 conv=True
+  [续延μ]    it=  158 t= 11.37s PSNR= 34.557 SNR= 28.900 conv=True
+  [无数据项] it=   96 t=  5.89s PSNR= 34.562 SNR= 28.905 conv=True
 
 == peppers_gray.tif r=30% #cand=95537 ==
-  [Basic]    it= 1500 t= 44.14s PSNR= 35.628 SNR= 29.685 conv=False
-  [BB1]      it=   78 t=  2.47s PSNR= 35.630 SNR= 29.688 conv=True
-  [BB2]      it=   99 t=  3.03s PSNR= 35.630 SNR= 29.688 conv=True
-  [续延μ]    it=  156 t=  5.10s PSNR= 35.631 SNR= 29.688 conv=True
-  [无数据项] it=   91 t=  2.94s PSNR= 35.614 SNR= 29.672 conv=True
+  [Basic]    it= 7180 t=287.25s PSNR= 35.630 SNR= 29.688 conv=True
+  [BB1]      it=   85 t=  3.68s PSNR= 35.630 SNR= 29.688 conv=True
+  [BB2]      it=   81 t=  3.43s PSNR= 35.630 SNR= 29.688 conv=True
+  [续延μ]    it=  166 t=  7.36s PSNR= 35.631 SNR= 29.688 conv=True
+  [无数据项] it=  121 t=  4.82s PSNR= 35.614 SNR= 29.672 conv=True
 
 == peppers_gray.tif r=50% #cand=136129 ==
-  [Basic]    it= 1500 t= 65.10s PSNR= 33.909 SNR= 27.966 conv=False
-  [BB1]      it=   85 t=  4.09s PSNR= 33.913 SNR= 27.970 conv=True
-  [BB2]      it=   85 t=  4.09s PSNR= 33.913 SNR= 27.970 conv=True
-  [续延μ]    it=  182 t=  9.16s PSNR= 33.913 SNR= 27.970 conv=True
-  [无数据项] it=   78 t=  3.33s PSNR= 33.915 SNR= 27.972 conv=True
+  [Basic]    it= 5547 t=346.89s PSNR= 33.913 SNR= 27.970 conv=True
+  [BB1]      it=   86 t=  4.55s PSNR= 33.913 SNR= 27.970 conv=True
+  [BB2]      it=   83 t=  4.36s PSNR= 33.913 SNR= 27.970 conv=True
+  [续延μ]    it=  177 t= 10.14s PSNR= 33.913 SNR= 27.970 conv=True
+  [无数据项] it=   80 t=  4.07s PSNR= 33.915 SNR= 27.972 conv=True

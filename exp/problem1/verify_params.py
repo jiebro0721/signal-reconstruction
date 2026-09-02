@@ -18,7 +18,7 @@ IMGS = ["cameraman.tif", "peppers_gray.tif", "lake.tif", "woman_blonde.tif"]
 def solve(y, cand, x, beta, alpha, mu=1.0, maxit=1500):
     m = Phase2Model(y, cand, beta=beta, alpha=alpha, smooth="sqrt")
     t0 = time.perf_counter()
-    res = gpsr_bb(m, y[cand], mu=mu, tolP=1e-2, maxit=maxit)
+    res = gpsr_bb(m, y_amf[cand], mu=mu, tolP=1e-2, maxit=maxit)
     xh = y.copy(); xh[cand] = res["u"]
     return dict(it=res["it"], t=time.perf_counter() - t0, psnr=psnr(x, xh))
 
