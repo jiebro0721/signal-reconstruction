@@ -48,9 +48,12 @@ def drho_huber(t, mu):
 
 
 def rho_softplus(t, mu):
-    """ρ(t) = mu*[ln(1+e^{-t/mu}) + ln(1+e^{t/mu})],  文献[4] φ1. 数值稳定实现."""
+    """ρ(t) = mu*[ln(1+e^{-t/mu}) + ln(1+e^{t/mu})],  文献[4] φ1. 数值稳定实现.
+
+    等价形式: |t| + 2 mu ln(1 + e^{-|t|/mu});  C^1, 逼近误差 sup |ρ−|t|| = 2μ ln2.
+    """
     a = np.abs(t)
-    return a + mu * np.log1p(np.exp(-a / mu))
+    return a + 2.0 * mu * np.log1p(np.exp(-a / mu))
 
 
 def drho_softplus(t, mu):
@@ -149,7 +152,7 @@ class Phase2Model:
         self.potential = potential
         self.rho, self.drho = SMOOTHINGS[smooth]
         self.smooth = smooth
-        self.mu = 1e-3            # 光滑参数(由求解器/续延策略更新)
+        self.mu = 1.0             # 光滑参数(主配置 μ=1, 求解器可再显式覆盖)
         self.with_data = True     # 是否保留数据保真项 Σ|u_ij − y_ij| (文献[3]讨论)
         self.nvars = int(np.sum(self.mask))
         self.idx_map = np.full(self.mask.shape, -1, dtype=np.int64)
