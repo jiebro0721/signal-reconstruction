@@ -18,7 +18,7 @@ def solve(y, cand, beta, alpha, x, mu=1.0, with_data=True, maxit=1500):
     m = Phase2Model(y, cand, beta=beta, alpha=alpha, smooth="sqrt")
     m.with_data = with_data
     t0 = time.perf_counter()
-    res = gpsr_bb(m, y[cand], mu=mu, tolP=1e-2, maxit=maxit)
+    res = gpsr_bb(m, y_amf[cand], mu=mu, tolP=1e-2, maxit=maxit)
     xh = y.copy(); xh[cand] = res["u"]
     return dict(it=res["it"], t=time.perf_counter() - t0, conv=res["converged"],
                 psnr=psnr(x, xh))
