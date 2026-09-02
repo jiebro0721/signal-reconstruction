@@ -62,11 +62,12 @@ SMOOTHINGS = {"sqrt": (rho_sqrt, drho_sqrt),
               "softplus": (rho_softplus, drho_softplus)}
 
 # ---------------------------------------------------------------------------
-# 保边势函数 φ_α (问题一主选 (1) 式; 其余留待问题二)
+# 保边势函数 φ_α (题目问题二列出的 5 种, 文献[3] eq.(3)-(7))
+# 共同性质: 偶、凸、关于 |t| 严格递增, |t| 远离 0 时 φ_α(t) ≈ |t| (按比例/尺度含义)
 # ---------------------------------------------------------------------------
 
 def phi_sqrt(t, alpha=100.0):
-    """φ_α(t) = sqrt(t^2 + α),  α > 0; 处处光滑, 且 |t|→∞ 时 φ_α(t)→|t|."""
+    """(1) φ_α(t) = sqrt(t^2 + α),  α > 0; 处处光滑 C^∞."""
     return np.sqrt(t * t + alpha)
 
 
@@ -74,7 +75,50 @@ def dphi_sqrt(t, alpha=100.0):
     return t / np.sqrt(t * t + alpha)
 
 
-POTENTIALS = {"sqrt": (phi_sqrt, dphi_sqrt)}
+def phi_power(t, alpha=1.3):
+    """(2) φ_α(t) = |t|^α, 1 < α ≤ 2;  C^1 (α<2 时仅 C^1)."""
+    return np.abs(t) ** alpha
+
+
+def dphi_power(t, alpha=1.3):
+    return alpha * np.sign(t) * np.abs(t) ** (alpha - 1.0)
+
+
+def phi_logcosh(t, alpha=0.1):
+    """(3) φ_α(t) = log(cosh(α t)), α > 0;  C^∞. 数值稳定: logcosh(x)=|x|-log2+log1p(e^{-2|x|})."""
+    x = alpha * t
+    return np.abs(x) - np.log(2.0) + np.log1p(np.exp(-2.0 * np.abs(x)))
+
+
+def dphi_logcosh(t, alpha=0.1):
+    return alpha * np.tanh(alpha * t)
+
+
+def phi_log1(t, alpha=10.0):
+    """(4) φ_α(t) = |t|/α − log(1 + |t|/α),  α > 0;  C^2, 且 |φ_α'| ≤ 1/α (全局 Lipschitz)."""
+    a = np.abs(t)
+    return a / alpha - np.log1p(a / alpha)
+
+
+def dphi_log1(t, alpha=10.0):
+    return np.sign(t) * (1.0 / alpha - 1.0 / (alpha + np.abs(t)))
+
+
+def phi_huber(t, alpha=10.0):
+    """(5) Huber 型: φ_α(t) = t²/(2α) (|t|≤α) / |t| − α/2 (|t|>α);  C^1, |φ_α'| ≤ 1."""
+    a = np.abs(t)
+    return np.where(a <= alpha, t * t / (2.0 * alpha), a - alpha / 2.0)
+
+
+def dphi_huber(t, alpha=10.0):
+    return np.where(np.abs(t) <= alpha, t / alpha, np.sign(t))
+
+
+POTENTIALS = {"sqrt": (phi_sqrt, dphi_sqrt),
+              "power": (phi_power, dphi_power),
+              "logcosh": (phi_logcosh, dphi_logcosh),
+              "log1": (phi_log1, dphi_log1),
+              "huber": (phi_huber, dphi_huber)}
 
 # ---------------------------------------------------------------------------
 # 二阶恢复模型 (在噪声候选集 N 上)
@@ -87,19 +131,22 @@ class Phase2Model:
     """
 
     def __init__(self, y, mask, beta=5.0, alpha=100.0,
-                 smooth="sqrt", boundary="reflect"):
+                 smooth="sqrt", potential="sqrt", boundary="reflect"):
         """
-        y     : (M,N) 噪声图像
-        mask  : (M,N) bool, True = 噪声候选集 N
-        beta  : 正则化参数
-        alpha : 势函数参数
+        y         : (M,N) 噪声图像
+        mask      : (M,N) bool, True = 噪声候选集 N
+        beta      : 正则化参数
+        alpha     : 势函数参数 (二次型: 曲率/尺度; power: 指数; logcosh: 速率)
+        smooth    : 光滑函数名 (sqrt/huber/softplus)
+        potential : 保边势函数名 (sqrt/power/logcosh/log1/huber)
         """
         self.y = np.asarray(y, dtype=np.float64)
         self.mask = np.asarray(mask, dtype=bool)
         self.M, self.N = self.y.shape
         self.beta = float(beta)
         self.alpha = float(alpha)
-        self.phi, self.dphi = POTENTIALS["sqrt"]
+        self.phi, self.dphi = POTENTIALS[potential]
+        self.potential = potential
         self.rho, self.drho = SMOOTHINGS[smooth]
         self.smooth = smooth
         self.mu = 1e-3            # 光滑参数(由求解器/续延策略更新)
