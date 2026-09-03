@@ -101,13 +101,6 @@ python exp/problem2/make_figures2.py         # 图
   共轭参数对照：PRP+/HS+ ~170 步，FR/DY ~1080 步；原始 PRP 与修正 PRP 数值
   一致，印证截断修正的价值在理论保障。
 
-## 审查修复记录
-
-Zcode 审查报告所列为 19 项，全部处理完毕（含 1 🔴 / 6 🟠 / 12 🟡），
-详见 `docs/CHANGES_after_review.md`。核心修复：GPSR-Basic 对照数据重跑至
-真实收敛、PSNR-α 曲线解析修复、β 网格扩展消除调参伪影、AMF 对齐论文语义、
-softplus 实现修正、初值统一、out-of-sample 汇总。
-
 ## 参考文献
 
 见题目附件。核心：Figueiredo et al. *Gradient Projection for Sparse Reconstruction*,
