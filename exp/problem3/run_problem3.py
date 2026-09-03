@@ -43,6 +43,18 @@ def support_stats(x, xtrue, thresh=0.05):
     return tp, fp
 
 
+DIAG_KEYS = ("negative_beta_count", "beta_truncation_count",
+             "descent_restart_count", "line_search_fallback_count")
+
+
+def cg_diagnostics(result):
+    return {key: int(result[key]) for key in DIAG_KEYS}
+
+
+def no_cg_diagnostics():
+    return {key: 0 for key in DIAG_KEYS}
+
+
 def cg_until_target(A, b, tau, model, x0, target, mu_seq=MU_SEQ,
                     maxit=MAXIT_CG, tolG=TOLG, rel_tol=REL_TOL):
     """μ 续延 CG, 逐段以相对目标变化停止, 报告达到 1.001×target 的累计迭代/时间."""
@@ -94,19 +106,21 @@ def run_instance(seed):
                      rel=np.linalg.norm(g["x"] - x) / xnorm, obj=obj_t,
                      tp=support_stats(g["x"], x)[0], fp=support_stats(g["x"], x)[1],
                      conv=bool(g["conv"]),
-                     it_to_target=g["it"], t_to_target=g_elapsed))
+                     it_to_target=g["it"], t_to_target=g_elapsed,
+                     **no_cg_diagnostics()))
     t0 = time.perf_counter()
     gd = gpsr_bb_solve(A, b, tau, tolP=TOLP_GPSR, maxit=MAXIT_GPSR, do_debias=True)
     gd_elapsed = time.perf_counter() - t0
-    rows.append(dict(method="GPSR-BB+debias", it=g["it"] + 1, t=gd_elapsed,
+    rows.append(dict(method="GPSR-BB+debias", it=g["it"], t=gd_elapsed,
                      rel=np.linalg.norm(gd["x"] - x) / xnorm,
                      obj=l1_obj(A, b, tau, gd["x"]),
                      tp=support_stats(gd["x"], x)[0], fp=support_stats(gd["x"], x)[1],
-                     conv=True, it_to_target=g["it"], t_to_target=gd_elapsed))
+                     conv=True, it_to_target=g["it"], t_to_target=gd_elapsed,
+                     **no_cg_diagnostics()))
 
     # ---------- CG: 共轭参数对照 (单段 μ=1e-3, 相对目标变化停止, 初值 Aᵀb) ----------
     for beta, sfg, fb, name in (("prp+", True, True, "CG-PRP+"),
-                                ("prp", False, False, "CG-PRP无截断"),
+                                ("prp", True, True, "CG-PRP无截断"),
                                 ("fr", True, True, "CG-FR"),
                                 ("hs+", True, True, "CG-HS+"),
                                 ("dy", True, True, "CG-DY")):
@@ -121,7 +135,8 @@ def run_instance(seed):
                          obj=l1_obj(A, b, tau, r["x"]),
                          tp=support_stats(r["x"], x)[0], fp=support_stats(r["x"], x)[1],
                          conv=bool(r["conv"]),
-                         it_to_target=np.nan, t_to_target=np.nan))
+                         it_to_target=np.nan, t_to_target=np.nan,
+                         **cg_diagnostics(r)))
 
     # ---------- CG-PRP+ μ 续延 (主算法) + 同目标值对比 ----------
     t0 = time.perf_counter()
@@ -136,14 +151,16 @@ def run_instance(seed):
                      obj=l1_obj(A, b, tau, xhat),
                      tp=support_stats(xhat, x)[0], fp=support_stats(xhat, x)[1],
                      conv=bool(r["conv"]),
-                     it_to_target=it_at, t_to_target=t_at))
+                     it_to_target=it_at, t_to_target=t_at,
+                     **cg_diagnostics(r)))
     xd = debias(A, b, xhat)
     rows.append(dict(method="CG-PRP+续延+debias", it=r["it_sum"], t=cg_elapsed,
                      rel=np.linalg.norm(xd - x) / xnorm,
                      obj=l1_obj(A, b, tau, xd),
                      tp=support_stats(xd, x)[0], fp=support_stats(xd, x)[1],
                      conv=bool(r["conv"]),
-                     it_to_target=it_at, t_to_target=t_at))
+                     it_to_target=it_at, t_to_target=t_at,
+                     **cg_diagnostics(r)))
     return rows
 
 
@@ -162,7 +179,7 @@ def main():
         w = csv.writer(f)
         w.writerow(["method", "it_mean", "it_std", "t_mean", "rel_mean", "obj_mean",
                     "tp_mean", "fp_mean", "it_to_target_mean", "t_to_target_mean",
-                    "conv_all"])
+                    *[f"{key}_mean" for key in DIAG_KEYS], "conv_all"])
         for m in methods:
             sub = [q for q in all_rows if q["method"] == m]
             def stat(key, fn=np.mean):
@@ -172,6 +189,7 @@ def main():
             w.writerow([m, stat("it"), float(np.std([q["it"] for q in sub])),
                         stat("t"), stat("rel"), stat("obj"), stat("tp"), stat("fp"),
                         stat("it_to_target"), stat("t_to_target"),
+                        *[stat(key) for key in DIAG_KEYS],
                         bool(all(q["conv"] for q in sub))])
     with open(os.path.join(TAB, "problem3_config.json"), "w", encoding="utf-8") as f:
         json.dump(dict(n=N, k=K, k_true=KTRUE, sigma2=SIGMA2, mu_seq=MU_SEQ,

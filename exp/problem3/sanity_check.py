@@ -38,7 +38,7 @@ print(f"GPSR-BB: it={g['it']} conv={g['conv']} t={t_gpsr:.2f}s "
       f"rel_err={relg:.5f} |support|={supg}")
 
 t0 = time.perf_counter()
-gd = gpsr_bb_solve(A, b, tau, tolP=1e-3, maxit=3000, debias=True)
+gd = gpsr_bb_solve(A, b, tau, tolP=1e-3, maxit=3000, do_debias=True)
 t_gpsr_d = time.perf_counter() - t0
 reld = np.linalg.norm(gd["x"] - x) / np.linalg.norm(x)
 print(f"GPSR-BB+debias: t={t_gpsr_d:.2f}s rel_err={reld:.5f}")

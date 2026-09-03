@@ -1,0 +1,4 @@
+configuration,negative_beta_count_mean,beta_truncation_count_mean,descent_restart_count_mean,line_search_fallback_count_mean,n_instances
+CG-PRP+,0.0,0.0,0.0,0.0,10
+CG-PRP_without_truncation,0.0,0.0,0.0,0.0,10
+CG-PRP+_continuation,0.0,0.0,0.0,6.5,10
