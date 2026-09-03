@@ -34,8 +34,16 @@ def _window_stats(y, w, mode="reflect"):
     return h, m, M
 
 
-def adaptive_median_filter(y, r=0.3, wmax=None, verbose=False):
+def adaptive_median_filter(y, r=0.3, wmax=None, s_min=0.0, s_max=255.0,
+                           verbose=False):
     """自适应中值滤波检测噪声候选.
+
+    参数
+    ----
+    y      : 污染图像
+    r      : 噪声等级(用于 w_max 查表)
+    wmax   : 最大窗口; None 时按文献[2]表1由 r 确定
+    s_min, s_max : 像素动态范围端点
 
     返回
     ----
@@ -74,12 +82,20 @@ def adaptive_median_filter(y, r=0.3, wmax=None, verbose=False):
         lo, med, hi = _window_stats(y, wmax, mode="reflect")
         smin[active], smed[active], smax[active] = lo[active], med[active], hi[active]
 
-    # 判定(严格按文献[2] Algorithm I 步骤 3-5):
+    # 判定(严格按文献[2] Algorithm I 步骤 3-5 与 Algorithm III 步骤 1):
     #   - 步骤3: 若某级窗口满足 smin<smed<smax, 转步骤5 —— 用该窗口(min,max)检查 y;
     #   - 步骤4: 窗口耗尽(w 超过 w_max 仍不满足) —— 无条件判为噪声候选并替换为中值;
-    #   - 步骤5: s_min < y < s_max 则非候选, 否则为候选。
+    #   - 步骤5: s_min < y < s_max 则非候选, 否则为候选;
+    #   - Algorithm III 步骤1: 噪声候选集 N = {(i,j): y_ij ∈ {s_min,s_max} 且 ŷ_ij ≠ y_ij},
+    #     即只把"取值为端点值且被 AMF 替换过"的像素判为候选(噪声像素取值恰为端点值,
+    #     未发生替换说明窗口无信息, 将其留给第二阶段的数据保真项处理亦可, 但按文献
+    #     定义从候选集中排除, 避免把平坦区间内的同值干净像素误判为噪声)。
     exhausted = active.copy()               # 从未获得满足窗口的像素(窗口耗尽)
-    cand = exhausted | ~((smin < y) & (y < smax))
+    amf_cand = exhausted | ~((smin < y) & (y < smax))
     y_amf = y.copy()
-    y_amf[cand] = smed[cand]
+    y_amf[amf_cand] = smed[amf_cand]
+    # 文献[2] Algorithm III 步骤 1 的候选集定义:
+    #   N = {(i,j): y_ij ∈ {s_min,s_max} 且 ŷ_ij ≠ y_ij}
+    # 即噪声像素取值恰为动态范围端点, 且 AMF 输出了替换值(中值不等于原值)。
+    cand = ((y == s_min) | (y == s_max)) & (y_amf != y)
     return cand, y_amf, dict(smin=smin, smed=smed, smax=smax)
