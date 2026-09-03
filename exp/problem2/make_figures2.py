@@ -157,7 +157,7 @@ def fig_potential_shapes(params=None):
     axes[1].axhline(1.0, color="gray", ls=":", lw=0.8)
     axes[1].axhline(-1.0, color="gray", ls=":", lw=0.8)
     axes[1].set_xlabel("$t$"); axes[1].set_ylabel(r"$\varphi_\alpha'(t)$")
-    axes[1].set_title("势函数导数   ±1 虚线为渐近界")
+    axes[1].set_title("势函数导数   ±1 虚线为渐近界")
     axes[1].grid(alpha=.3)
     fig.tight_layout()
     fig.savefig(os.path.join(FIG, "potential_shapes.png"), dpi=200)
