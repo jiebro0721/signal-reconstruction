@@ -32,18 +32,21 @@ signal-reconstruction/
 │   │   ├── verify_params.py     #   参数在多个图像上的验证
 │   │   ├── run_problem1.py      #   ★ 主实验 (12 图 × {30%,50%} × 3 种子)
 │   │   ├── strategy_compare.py  #   Basic/BB1/BB2, μ 固定/续延, 数据项有无
+│   │   ├── mu_ablation.py       #   光滑参数 μ 消融 (μ=1…1e-4)
 │   │   ├── make_figures.py      #   收敛曲线 / 视觉对比 / PSNR 汇总图
 │   │   └── results/             #   表 (csv/txt), 图 (png), 恢复图 (tif, 不入库)
-│   └── problem2/            # 问题二实验
-│       ├── check_potentials.py  #   5 种势函数梯度 FD 校验(20样本) + 凸性抽查
-│       ├── tune_potentials.py   #   (α, β) 独立标定(v2: β 至 640, 选优优先收敛解)
-│       ├── merge_tuning.py      #   并行调参日志/参数合并 → problem2_params.json
-│       ├── run_problem2.py      #   ★ 主实验 (3图×{30%,50%}×2种子×5势函数, 含 OOS 汇总)
-│       ├── make_figures2.py     #   PSNR-α 曲线 / 指标条形图 / 恢复对比图
-│       └── results/             #   表 (csv/json/txt), 图 (png)
+│   ├── problem2/            # 问题二实验
+│   │   ├── check_potentials.py  #   5 种势函数梯度 FD 校验(20样本) + 凸性抽查
+│   │   ├── tune_potentials.py   #   (α, β) 独立标定(v2: β 至 640, 选优优先收敛解)
+│   │   ├── verify_beta1280.py   #   β=1280 网格上界延伸验证
+│   │   ├── merge_tuning.py      #   并行调参日志/参数合并 → problem2_params.json
+│   │   ├── run_problem2.py      #   ★ 主实验 (3图×{30%,50%}×2种子×5势函数, 含 OOS 汇总)
+│   │   ├── make_figures2.py     #   PSNR-α 曲线 / 指标条形图 / 恢复对比图
+│   │   └── results/             #   表 (csv/json/txt), 图 (png)
 │   └── problem3/            # 问题三实验
 │       ├── sanity_check.py      #   实例生成/梯度FD/两算法收敛性验证
-│       ├── run_problem3.py      #   ★ 主实验 (10实例 × 8方法, 含同目标值口径)
+│       ├── run_problem3.py      #   ★ 主实验 (10实例 × 9方法, 含同目标值口径)
+│       ├── init_stop_ablation.py #  初值与分段停止准则消融 (257.3 vs 122.7 步)
 │       ├── make_figures3.py     #   收敛曲线/信号对比/汇总条形图
 │       └── results/             #   表 (csv/json), 图 (png)
 └── docs/
@@ -54,8 +57,9 @@ signal-reconstruction/
 
 ## 运行环境
 
-- Python 3.11 (conda env `cumcm2025c`), 依赖: `numpy scipy matplotlib pillow tifffile`
-  （`tifffile` 用于读取带多余 alpha 通道的标准测试 TIFF）
+- Python 3.11 (conda env `cumcm2025c`)，依赖见 `requirements.txt`
+  （核心：`numpy scipy matplotlib pillow tifffile`；
+  `tifffile` 用于读取带多余 alpha 通道的标准测试 TIFF）
 
 ## 快速复现
 
@@ -91,14 +95,16 @@ python exp/problem3/make_figures3.py          # 图
 ## 主要结论
 
 - 问题一：12 图 × 2 噪声等级 × 3 种子共 72 算例全部收敛；检测严格采用文献的
-  两条件候选集定义，TPR=100%、误检率≤0.7%；30%/50% 平均 PSNR 37.33 / 33.76 dB
+  两条件候选集定义，TPR 均值 99.99%（最低 99.82%）、误检率≤0.7%；
+  30%/50% 平均 PSNR 37.33 / 33.76 dB
   （Lena 30% 达 38.35 dB，比 AMF 直接输出高 4.47 dB、比 7×7 中值滤波高 10.10 dB），
   平均迭代 87/92 次，平均用时 2.9 / 5.4 s；BB 步长相比 GPSR-Basic 迭代数降低
   60–88 倍。
-- 问题二（v3 协议：α、β 独立标定，幂函数型经 $(t^2+\mu^2)^{\alpha/2}$ 光滑化
+- 问题二（v2 协议：α、β 独立标定，幂函数型经 $(t^2+\mu^2)^{\alpha/2}$ 光滑化
   后正常收敛）：五种势函数最优参数下 PSNR 极差 ≤0.19 dB（恢复质量不敏感，
   out-of-sample 一致）；参数敏感性呈宽平台、悬崖、正常平台三类行为；收敛速度
-  差 6–14 倍，平方根型/幂函数型最快。
+  差 6–14 倍，平方根型/幂函数型最快；β=1280 延伸验证表明 640 网格上界的
+  平台代表值表述成立（`problem2_beta1280_verification.csv`）。
 - 问题三：CG-PRP+（Aᵀb 初值 + 相对变化准则分段停止 + μ 续延至 1e-6）与
   GPSR-BB 均恢复全部 160 个尖峰；同目标值口径 122.7 步/1.64 s，为 GPSR-BB
   （29.1 步/0.14 s）的 4.2 倍；去偏置后相对误差 0.0286 vs 0.0265，几乎持平；

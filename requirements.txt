@@ -1,0 +1,8 @@
+# 信号重构项目依赖 (Python 3.11, conda env cumcm2025c)
+# 核心数值与绘图
+numpy==2.4.6
+scipy==1.18.0
+matplotlib==3.10.5
+# 标准测试 TIFF 读取 (部分测试图带多余 alpha 通道)
+tifffile==2026.3.3
+pillow==12.3.0

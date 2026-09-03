@@ -111,7 +111,8 @@ def run_instance(seed):
     t0 = time.perf_counter()
     gd = gpsr_bb_solve(A, b, tau, tolP=TOLP_GPSR, maxit=MAXIT_GPSR, do_debias=True)
     gd_elapsed = time.perf_counter() - t0
-    rows.append(dict(method="GPSR-BB+debias", it=g["it"], t=gd_elapsed,
+    # 口径：去偏置(固定支撑最小二乘)计 1 步，与 problem3_summary.csv 存档一致
+    rows.append(dict(method="GPSR-BB+debias", it=g["it"] + 1, t=gd_elapsed,
                      rel=np.linalg.norm(gd["x"] - x) / xnorm,
                      obj=l1_obj(A, b, tau, gd["x"]),
                      tp=support_stats(gd["x"], x)[0], fp=support_stats(gd["x"], x)[1],

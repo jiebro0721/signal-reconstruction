@@ -57,25 +57,29 @@ def adaptive_median_filter(y, r=0.3, wmax=None, s_min=0.0, s_max=255.0,
         wmax = w_max_for_noise_level(r)
 
     # 逐级扩大窗口: 记录每个像素"首次满足 smin<smed<smax 的窗口统计"
-    # done: 已经满足条件(或 w>wmax 直接判为候选)的像素
     smin = np.full((M, N), np.nan)
     smed = np.full((M, N), np.nan)
     smax = np.full((M, N), np.nan)
-    satisfied = np.zeros((M, N), dtype=bool)   # 是否通过 smin<smed<smax 判定
     active = np.ones((M, N), dtype=bool)       # 尚未确定最终窗口的像素
 
     for w in range(3, wmax + 1, 2):
-        idx = np.where(active)
-        if len(idx[0]) == 0:
+        if not np.any(active):
             break
-        lo, med, hi = _window_stats(y, w, mode="reflect")
-        # 当前仍活跃的像素: 检查条件 s_min < s_med < s_max
-        chk = active & (lo < med) & (med < hi)
-        smin[chk], smed[chk], smax[chk] = lo[chk], med[chk], hi[chk]
-        satisfied |= chk
+        # 只在活跃像素的包围盒(外扩 w//2)内计算窗口统计, 避免每级全图重算;
+        # 外扩保证滤波窗口的支撑完全落在裁剪块内, 结果与全图计算一致
+        idx = np.where(active)
+        pad = w // 2
+        i0 = max(int(idx[0].min()) - pad, 0)
+        i1 = min(int(idx[0].max()) + pad + 1, M)
+        j0 = max(int(idx[1].min()) - pad, 0)
+        j1 = min(int(idx[1].max()) + pad + 1, N)
+        lo, med, hi = _window_stats(y[i0:i1, j0:j1], w, mode="reflect")
+        chk_sub = active[i0:i1, j0:j1] & (lo < med) & (med < hi)
+        chk = np.zeros((M, N), dtype=bool)
+        chk[i0:i1, j0:j1] = chk_sub
+        smin[chk], smed[chk], smax[chk] = lo[chk_sub], med[chk_sub], hi[chk_sub]
         # 条件满足即停止扩窗; 还有多数值窗口(窗口内全是同一极值)则继续
-        active = active & ~chk
-        # w 继续增大
+        active &= ~chk
 
     # 剩余(所有 w 都不满足 smin<smed<smax)的像素: 用 wmax 窗口统计, 直接判为候选
     if np.any(active):

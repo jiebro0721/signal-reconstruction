@@ -1,0 +1,15 @@
+# 问题二 β=1280 网格上界验证 (Lena 512, 种子 2026, α* 取 problem2_params.json, 参照 β=640 取 problem2_tuning.txt)
+
+== r=30% #cand=78586 ==
+  [sqrt    ] alpha*=     300 beta=1280 it=  122 PSNR= 38.366 conv  gap=5.36e-03 | β=640 参照 38.365 → 增益 +0.001 dB
+  [power   ] alpha*=     1.4 beta=1280 it=  143 PSNR= 38.345 conv  gap=4.95e-03 | β=640 参照 38.345 → 增益 +0.000 dB
+  [logcosh ] alpha*=     0.1 beta=1280 it=  483 PSNR= 38.228 conv  gap=8.57e-03 | β=640 参照 38.182 → 增益 +0.046 dB
+  [log1    ] alpha*=       3 beta=1280 it=  636 PSNR= 38.314 conv  gap=9.84e-03 | β=640 参照 38.313 → 增益 +0.001 dB
+  [huber   ] alpha*=      30 beta=1280 it= 1405 PSNR= 38.190 conv  gap=9.53e-03 | β=640 参照 38.190 → 增益 +0.000 dB
+
+== r=50% #cand=130901 ==
+  [sqrt    ] alpha*=    1000 beta=1280 it=   50 PSNR= 34.744 conv  gap=2.68e-03 | β=640 参照 34.744 → 增益 -0.000 dB
+  [power   ] alpha*=     1.6 beta=1280 it=   87 PSNR= 34.760 conv  gap=5.83e-03 | β=640 参照 34.760 → 增益 -0.000 dB
+  [logcosh ] alpha*=     0.1 beta=1280 it= 1465 PSNR= 34.611 conv  gap=9.60e-03 | β=640 参照 34.589 → 增益 +0.022 dB
+  [log1    ] alpha*=       3 beta=1280 it=  595 PSNR= 34.615 conv  gap=7.79e-03 | β=640 参照 34.615 → 增益 +0.000 dB
+  [huber   ] alpha*=      30 beta=1280 it= 1346 PSNR= 34.664 conv  gap=7.15e-03 | β=640 参照 34.664 → 增益 +0.000 dB
