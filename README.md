@@ -70,6 +70,10 @@ python exp/problem2/check_potentials.py      # 势函数梯度校验
 python exp/problem2/tune_potentials.py       # (α,β) 标定 (约 30 分钟)
 python exp/problem2/run_problem2.py          # 主实验 (约 30 分钟)
 python exp/problem2/make_figures2.py         # 图
+# 问题三
+python exp/problem3/sanity_check.py          # 梯度/收敛/去偏置自检
+python exp/problem3/run_problem3.py           # 10 实例完整对比
+python exp/problem3/make_figures3.py          # 图
 ```
 
 ## 方法摘要
@@ -88,7 +92,7 @@ python exp/problem2/make_figures2.py         # 图
 
 - 问题一：12 图 × 2 噪声等级 × 3 种子共 72 算例全部收敛；检测严格采用文献的
   两条件候选集定义，TPR=100%、误检率≤0.7%；30%/50% 平均 PSNR 37.33 / 33.76 dB
-  （Lena 30% 达 38.35 dB，比 AMF 直接输出高 5.2 dB、比 7×7 中值滤波高 10.1 dB），
+  （Lena 30% 达 38.35 dB，比 AMF 直接输出高 4.47 dB、比 7×7 中值滤波高 10.10 dB），
   平均迭代 87/92 次，平均用时 2.9 / 5.4 s；BB 步长相比 GPSR-Basic 迭代数降低
   60–88 倍。
 - 问题二（v3 协议：α、β 独立标定，幂函数型经 $(t^2+\mu^2)^{\alpha/2}$ 光滑化
@@ -98,8 +102,9 @@ python exp/problem2/make_figures2.py         # 图
 - 问题三：CG-PRP+（Aᵀb 初值 + 相对变化准则分段停止 + μ 续延至 1e-6）与
   GPSR-BB 均恢复全部 160 个尖峰；同目标值口径 122.7 步/1.64 s，为 GPSR-BB
   （29.1 步/0.14 s）的 4.2 倍；去偏置后相对误差 0.0286 vs 0.0265，几乎持平；
-  共轭参数对照：PRP+/HS+ ~170 步，FR/DY ~1080 步；原始 PRP 与修正 PRP 数值
-  一致，印证截断修正的价值在理论保障。
+  共轭参数对照：PRP+/HS+ ~170 步，FR/DY ~1080 步；本组实例中原始 PRP 与
+  修正 PRP 数值一致，诊断记录显示负参数截断未触发，故该实验只说明两者在
+  当前实例上等价，截断的理论价值仍以文献结论为依据。
 
 ## 参考文献
 
