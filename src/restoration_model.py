@@ -67,6 +67,13 @@ SMOOTHINGS = {"sqrt": (rho_sqrt, drho_sqrt),
 # ---------------------------------------------------------------------------
 # 保边势函数 φ_α (题目问题二列出的 5 种, 文献[3] eq.(3)-(7))
 # 共同性质: 偶、凸、关于 |t| 严格递增, |t| 远离 0 时 φ_α(t) ≈ |t| (按比例/尺度含义)
+# 光滑化: 5 种势函数带 (value, deriv) 与 (smooth, smooth_deriv):
+#   - 本身光滑的 (√(t²+α)、log cosh、|t|/α−log) 直接使用;
+#   - C¹ 的 Huber 直接使用(其二阶导分段有界);
+#   - |t|^α (1<α<2) 仅 C¹ 且 φ'' 在 0 附近奇异, 采用文献[4]的 p-范数光滑化
+#     (t²+μ²)^{α/2} ⇒ C^∞, 与原函数在 |t|≫μ 时一致, 且消除原点奇异;
+#     (文献[4]对 lp 正则的光滑家族 SF(III) 即 (μ̄²+t²)^{(p-1)/2}φ_j(μ,t)
+#      的同源技巧, 此处取 φ=√(t²+μ²) 型合并后即 (μ²+t²)^{p/2}。)
 # ---------------------------------------------------------------------------
 
 def phi_sqrt(t, alpha=100.0):
@@ -78,13 +85,30 @@ def dphi_sqrt(t, alpha=100.0):
     return t / np.sqrt(t * t + alpha)
 
 
+def phi_sqrt_sm(t, alpha=100.0, mu=1.0):
+    return phi_sqrt(t, alpha)
+
+
+def dphi_sqrt_sm(t, alpha=100.0, mu=1.0):
+    return dphi_sqrt(t, alpha)
+
+
 def phi_power(t, alpha=1.3):
-    """(2) φ_α(t) = |t|^α, 1 < α ≤ 2;  C^1 (α<2 时仅 C^1)."""
+    """(2) φ_α(t) = |t|^α, 1 < α ≤ 2;  C^1 (α<2 时仅 C^1, φ'' 在 0 附近奇异)."""
     return np.abs(t) ** alpha
 
 
 def dphi_power(t, alpha=1.3):
     return alpha * np.sign(t) * np.abs(t) ** (alpha - 1.0)
+
+
+def phi_power_sm(t, alpha=1.3, mu=1.0):
+    """|t|^α 的光滑化 (t²+μ²)^{α/2}: C^∞, 与原函数在 |t|≫μ 时一致 (文献[4])."""
+    return (t * t + mu * mu) ** (alpha / 2.0)
+
+
+def dphi_power_sm(t, alpha=1.3, mu=1.0):
+    return alpha * t * (t * t + mu * mu) ** (alpha / 2.0 - 1.0)
 
 
 def phi_logcosh(t, alpha=0.1):
@@ -97,6 +121,14 @@ def dphi_logcosh(t, alpha=0.1):
     return alpha * np.tanh(alpha * t)
 
 
+def phi_logcosh_sm(t, alpha=0.1, mu=1.0):
+    return phi_logcosh(t, alpha)
+
+
+def dphi_logcosh_sm(t, alpha=0.1, mu=1.0):
+    return dphi_logcosh(t, alpha)
+
+
 def phi_log1(t, alpha=10.0):
     """(4) φ_α(t) = |t|/α − log(1 + |t|/α),  α > 0;  C^2, 且 |φ_α'| ≤ 1/α (全局 Lipschitz)."""
     a = np.abs(t)
@@ -105,6 +137,14 @@ def phi_log1(t, alpha=10.0):
 
 def dphi_log1(t, alpha=10.0):
     return np.sign(t) * (1.0 / alpha - 1.0 / (alpha + np.abs(t)))
+
+
+def phi_log1_sm(t, alpha=10.0, mu=1.0):
+    return phi_log1(t, alpha)
+
+
+def dphi_log1_sm(t, alpha=10.0, mu=1.0):
+    return dphi_log1(t, alpha)
 
 
 def phi_huber(t, alpha=10.0):
@@ -117,11 +157,19 @@ def dphi_huber(t, alpha=10.0):
     return np.where(np.abs(t) <= alpha, t / alpha, np.sign(t))
 
 
-POTENTIALS = {"sqrt": (phi_sqrt, dphi_sqrt),
-              "power": (phi_power, dphi_power),
-              "logcosh": (phi_logcosh, dphi_logcosh),
-              "log1": (phi_log1, dphi_log1),
-              "huber": (phi_huber, dphi_huber)}
+def phi_huber_sm(t, alpha=10.0, mu=1.0):
+    return phi_huber(t, alpha)
+
+
+def dphi_huber_sm(t, alpha=10.0, mu=1.0):
+    return dphi_huber(t, alpha)
+
+
+POTENTIALS = {"sqrt": (phi_sqrt, dphi_sqrt, phi_sqrt_sm, dphi_sqrt_sm),
+              "power": (phi_power, dphi_power, phi_power_sm, dphi_power_sm),
+              "logcosh": (phi_logcosh, dphi_logcosh, phi_logcosh_sm, dphi_logcosh_sm),
+              "log1": (phi_log1, dphi_log1, phi_log1_sm, dphi_log1_sm),
+              "huber": (phi_huber, dphi_huber, phi_huber_sm, dphi_huber_sm)}
 
 # ---------------------------------------------------------------------------
 # 二阶恢复模型 (在噪声候选集 N 上)
@@ -148,7 +196,7 @@ class Phase2Model:
         self.M, self.N = self.y.shape
         self.beta = float(beta)
         self.alpha = float(alpha)
-        self.phi, self.dphi = POTENTIALS[potential]
+        self.phi, self.dphi, self.phi_sm, self.dphi_sm = POTENTIALS[potential]
         self.potential = potential
         self.rho, self.drho = SMOOTHINGS[smooth]
         self.smooth = smooth
@@ -201,12 +249,14 @@ class Phase2Model:
         freg = 0.0
         for d in range(self.ndirs):
             k = self.nb_kind[d]
-            m0 = np.where(k == 0)[0]          # 邻居为干净像素: 2φ(u − y)
+            m0 = np.where(k == 0)[0]          # 邻居为干净像素: 2φ_μ(u − y)
             if m0.size:
-                freg += 2.0 * np.sum(self.phi(u[m0] - self.nb_yval[d][m0], self.alpha))
-            m1 = np.where(k == 1)[0]          # 邻居为噪声候选变量: φ(u − u_nbr)
+                freg += 2.0 * np.sum(self.phi_sm(u[m0] - self.nb_yval[d][m0],
+                                                 self.alpha, self.mu))
+            m1 = np.where(k == 1)[0]          # 邻居为噪声候选变量: φ_μ(u − u_nbr)
             if m1.size:
-                freg += np.sum(self.phi(u[m1] - u[self.nb_idx[d][m1]], self.alpha))
+                freg += np.sum(self.phi_sm(u[m1] - u[self.nb_idx[d][m1]],
+                                           self.alpha, self.mu))
         return fdata + 0.5 * self.beta * freg
 
     def gradient(self, u):
@@ -218,10 +268,12 @@ class Phase2Model:
             k = self.nb_kind[d]
             m0 = np.where(k == 0)[0]
             if m0.size:
-                g[m0] += self.beta * self.dphi(u[m0] - self.nb_yval[d][m0], self.alpha)
+                g[m0] += self.beta * self.dphi_sm(u[m0] - self.nb_yval[d][m0],
+                                                  self.alpha, self.mu)
             m1 = np.where(k == 1)[0]
             if m1.size:
-                g[m1] += self.beta * self.dphi(u[m1] - u[self.nb_idx[d][m1]], self.alpha)
+                g[m1] += self.beta * self.dphi_sm(u[m1] - u[self.nb_idx[d][m1]],
+                                                  self.alpha, self.mu)
         return g
 
     def _set_mu(self, mu):

@@ -1,76 +1,75 @@
 # 问题二调参结果 (Lena 512, v2: β 网格扩展至 640, 选优优先收敛解)
 
-== r=30% #cand=89759 ==
-  [sqrt    ] alpha=      10 beta=40  it= 1378 PSNR= 36.991 conv  gap=1.00e-02
-  [sqrt    ] alpha=      30 beta=40  it=  627 PSNR= 37.232 conv  gap=9.99e-03
-  [sqrt    ] alpha=     100 beta=40  it=  220 PSNR= 37.356 conv  gap=8.03e-03
-  [sqrt    ] alpha=     300 beta=40  it=   74 PSNR= 37.373 conv  gap=9.88e-03
-  [sqrt    ] alpha=    1000 beta=40  it=   36 PSNR= 37.326 conv  gap=9.62e-03
-  [sqrt    ] alpha=    3000 beta=40  it=   21 PSNR= 37.255 conv  gap=8.22e-03
-  [sqrt    ] alpha=     300 beta=    5 it=   79 PSNR= 37.157 conv  gap=7.25e-03
-  [sqrt    ] alpha=     300 beta=   20 it=   77 PSNR= 37.367 conv  gap=9.92e-03
-  [sqrt    ] alpha=     300 beta=   40 it=   74 PSNR= 37.373 conv  gap=9.88e-03
-  [sqrt    ] alpha=     300 beta=   80 it=  102 PSNR= 37.372 conv  gap=2.89e-03
-  [sqrt    ] alpha=     300 beta=  160 it=   95 PSNR= 37.371 conv  gap=9.18e-03
-  [sqrt    ] alpha=     300 beta=  320 it=  126 PSNR= 37.369 conv  gap=8.72e-03
-  [sqrt    ] alpha=     300 beta=  640 it=  114 PSNR= 37.369 conv  gap=3.20e-03
-  >> sqrt: alpha*=300, beta*=40, PSNR*=37.373, conv=True
-  [power   ] alpha=    1.05 beta=40  it= 1500 PSNR= 34.778 trunc gap=1.91e+02
-  [power   ] alpha=     1.1 beta=40  it= 1500 PSNR= 35.531 trunc gap=1.70e+02
-  [power   ] alpha=     1.2 beta=40  it= 1500 PSNR= 37.014 trunc gap=1.28e+02
-  [power   ] alpha=     1.3 beta=40  it= 1500 PSNR= 37.335 trunc gap=5.97e+01
-  [power   ] alpha=     1.4 beta=40  it= 1500 PSNR= 37.361 trunc gap=2.25e+01
-  [power   ] alpha=     1.6 beta=40  it= 1500 PSNR= 37.333 trunc gap=5.96e-02
-  [power   ] alpha=       2 beta=40  it=   26 PSNR= 37.144 conv  gap=5.60e-03
-  >> power: α=2 为 L2 边界参考, 选优限制在 1<α<2 → α*=1.4
-  [power   ] alpha=     1.4 beta=    5 it= 1500 PSNR= 37.367 trunc gap=1.98e+00
-  [power   ] alpha=     1.4 beta=   20 it= 1500 PSNR= 37.363 trunc gap=1.04e+01
-  [power   ] alpha=     1.4 beta=   40 it= 1500 PSNR= 37.361 trunc gap=2.25e+01
-  [power   ] alpha=     1.4 beta=   80 it= 1500 PSNR= 37.361 trunc gap=4.59e+01
-  [power   ] alpha=     1.4 beta=  160 it= 1500 PSNR= 37.360 trunc gap=9.21e+01
-  [power   ] alpha=     1.4 beta=  320 it= 1500 PSNR= 37.360 trunc gap=1.27e+02
-  [power   ] alpha=     1.4 beta=  640 it= 1500 PSNR= 37.360 trunc gap=1.72e+02
-  >> power: alpha*=1.4, beta*=5, PSNR*=37.367, conv=False  [注: 全部未收敛 → truncated 最优]
-  >> power 1500->5000 步验证: PSNR=37.3694 gap=6.506e-01 conv=False
-  [logcosh ] alpha=   0.003 beta=40  it=   26 PSNR= 10.682 conv  gap=1.77e-04
-  [logcosh ] alpha=    0.01 beta=40  it=  292 PSNR= 14.089 conv  gap=9.23e-03
-  [logcosh ] alpha=    0.03 beta=40  it=   74 PSNR= 32.702 conv  gap=8.88e-03
-  [logcosh ] alpha=     0.1 beta=40  it=  201 PSNR= 36.809 conv  gap=9.88e-03
-  [logcosh ] alpha=     0.3 beta=40  it=  641 PSNR= 36.400 conv  gap=6.64e-03
-  [logcosh ] alpha=       1 beta=40  it= 1500 PSNR= 36.030 trunc gap=2.80e+00
-  [logcosh ] alpha=     0.1 beta=    5 it=  294 PSNR= 29.878 conv  gap=9.94e-03
-  [logcosh ] alpha=     0.1 beta=   20 it=  141 PSNR= 36.338 conv  gap=9.79e-03
-  [logcosh ] alpha=     0.1 beta=   40 it=  201 PSNR= 36.809 conv  gap=9.88e-03
-  [logcosh ] alpha=     0.1 beta=   80 it=  331 PSNR= 37.020 conv  gap=9.97e-03
-  [logcosh ] alpha=     0.1 beta=  160 it=  359 PSNR= 37.133 conv  gap=9.98e-03
-  [logcosh ] alpha=     0.1 beta=  320 it=  497 PSNR= 37.201 conv  gap=9.18e-03
-  [logcosh ] alpha=     0.1 beta=  640 it=  677 PSNR= 37.247 conv  gap=5.85e-03
-  >> logcosh: alpha*=0.1, beta*=640, PSNR*=37.247, conv=True
-  [log1    ] alpha=       1 beta=40  it= 1500 PSNR= 37.234 trunc gap=9.22e+00
-  [log1    ] alpha=       3 beta=40  it=  413 PSNR= 37.245 conv  gap=9.83e-03
-  [log1    ] alpha=      10 beta=40  it=  111 PSNR= 37.045 conv  gap=7.85e-03
-  [log1    ] alpha=      30 beta=40  it=   83 PSNR= 31.878 conv  gap=6.76e-03
-  [log1    ] alpha=     100 beta=40  it=  241 PSNR= 11.170 conv  gap=8.08e-03
-  [log1    ] alpha=     300 beta=40  it=   14 PSNR= 10.681 conv  gap=5.85e-04
-  [log1    ] alpha=       3 beta=    5 it=  271 PSNR= 35.917 conv  gap=9.98e-03
-  [log1    ] alpha=       3 beta=   20 it=  421 PSNR= 37.003 conv  gap=9.35e-03
-  [log1    ] alpha=       3 beta=   40 it=  413 PSNR= 37.245 conv  gap=9.83e-03
-  [log1    ] alpha=       3 beta=   80 it=  341 PSNR= 37.332 conv  gap=9.92e-03
-  [log1    ] alpha=       3 beta=  160 it=  417 PSNR= 37.355 conv  gap=9.78e-03
-  [log1    ] alpha=       3 beta=  320 it=  434 PSNR= 37.360 conv  gap=9.74e-03
-  [log1    ] alpha=       3 beta=  640 it=  485 PSNR= 37.361 conv  gap=9.99e-03
-  >> log1: alpha*=3, beta*=640, PSNR*=37.361, conv=True
-  [huber   ] alpha=       1 beta=40  it= 1500 PSNR= 35.839 trunc gap=3.68e+01
-  [huber   ] alpha=       3 beta=40  it= 1500 PSNR= 36.071 trunc gap=9.93e+00
-  [huber   ] alpha=      10 beta=40  it=  821 PSNR= 36.770 conv  gap=4.48e-03
-  [huber   ] alpha=      30 beta=40  it=  102 PSNR= 37.214 conv  gap=9.10e-03
-  [huber   ] alpha=     100 beta=40  it=   20 PSNR= 37.140 conv  gap=3.35e-03
-  [huber   ] alpha=     300 beta=40  it=   25 PSNR= 36.804 conv  gap=2.44e-03
-  [huber   ] alpha=      30 beta=    5 it=   81 PSNR= 36.956 conv  gap=5.93e-03
-  [huber   ] alpha=      30 beta=   20 it=   71 PSNR= 37.209 conv  gap=6.37e-03
-  [huber   ] alpha=      30 beta=   40 it=  102 PSNR= 37.214 conv  gap=9.10e-03
-  [huber   ] alpha=      30 beta=   80 it=  165 PSNR= 37.212 conv  gap=5.93e-03
-  [huber   ] alpha=      30 beta=  160 it=  342 PSNR= 37.210 conv  gap=5.32e-03
-  [huber   ] alpha=      30 beta=  320 it=  476 PSNR= 37.209 conv  gap=6.12e-03
-  [huber   ] alpha=      30 beta=  640 it=  870 PSNR= 37.208 conv  gap=6.92e-03
-  >> huber: alpha*=30, beta*=40, PSNR*=37.214, conv=True
+== r=30% #cand=78586 ==
+  [sqrt    ] alpha=      10 beta=40  it= 1375 PSNR= 37.821 conv  gap=1.00e-02
+  [sqrt    ] alpha=      30 beta=40  it=  431 PSNR= 38.141 conv  gap=9.30e-03
+  [sqrt    ] alpha=     100 beta=40  it=  244 PSNR= 38.317 conv  gap=9.76e-03
+  [sqrt    ] alpha=     300 beta=40  it=   85 PSNR= 38.357 conv  gap=9.18e-03
+  [sqrt    ] alpha=    1000 beta=40  it=   41 PSNR= 38.311 conv  gap=9.65e-03
+  [sqrt    ] alpha=    3000 beta=40  it=   22 PSNR= 38.222 conv  gap=3.52e-03
+  [sqrt    ] alpha=     300 beta=    5 it=   59 PSNR= 37.997 conv  gap=9.77e-03
+  [sqrt    ] alpha=     300 beta=   20 it=   76 PSNR= 38.335 conv  gap=3.94e-03
+  [sqrt    ] alpha=     300 beta=   40 it=   85 PSNR= 38.357 conv  gap=9.18e-03
+  [sqrt    ] alpha=     300 beta=   80 it=   86 PSNR= 38.363 conv  gap=9.26e-03
+  [sqrt    ] alpha=     300 beta=  160 it=  125 PSNR= 38.365 conv  gap=9.58e-03
+  [sqrt    ] alpha=     300 beta=  320 it=  113 PSNR= 38.365 conv  gap=7.48e-03
+  [sqrt    ] alpha=     300 beta=  640 it=  132 PSNR= 38.365 conv  gap=8.14e-03
+  >> sqrt: alpha*=300, beta*=640, PSNR*=38.365, conv=True
+  [power   ] alpha=    1.05 beta=40  it=  754 PSNR= 38.220 conv  gap=9.92e-03
+  [power   ] alpha=     1.1 beta=40  it=  658 PSNR= 38.270 conv  gap=8.68e-03
+  [power   ] alpha=     1.2 beta=40  it=  316 PSNR= 38.307 conv  gap=9.14e-03
+  [power   ] alpha=     1.3 beta=40  it=  189 PSNR= 38.332 conv  gap=9.73e-03
+  [power   ] alpha=     1.4 beta=40  it=  129 PSNR= 38.345 conv  gap=9.90e-03
+  [power   ] alpha=     1.6 beta=40  it=   64 PSNR= 38.322 conv  gap=7.40e-03
+  [power   ] alpha=       2 beta=40  it=   27 PSNR= 38.128 conv  gap=8.61e-03
+  [power   ] alpha=     1.4 beta=    5 it=  108 PSNR= 38.340 conv  gap=9.02e-03
+  [power   ] alpha=     1.4 beta=   20 it=  108 PSNR= 38.345 conv  gap=3.78e-03
+  [power   ] alpha=     1.4 beta=   40 it=  129 PSNR= 38.345 conv  gap=9.90e-03
+  [power   ] alpha=     1.4 beta=   80 it=  126 PSNR= 38.345 conv  gap=9.19e-03
+  [power   ] alpha=     1.4 beta=  160 it=  131 PSNR= 38.345 conv  gap=6.30e-03
+  [power   ] alpha=     1.4 beta=  320 it=  145 PSNR= 38.345 conv  gap=9.72e-03
+  [power   ] alpha=     1.4 beta=  640 it=  138 PSNR= 38.345 conv  gap=8.23e-03
+  >> power: alpha*=1.4, beta*=640, PSNR*=38.345, conv=True
+  >> power 1500->5000 步验证: PSNR=38.3452 gap=8.228e-03 conv=True
+  [logcosh ] alpha=   0.003 beta=40  it=   10 PSNR= 10.682 conv  gap=1.52e-03
+  [logcosh ] alpha=    0.01 beta=40  it=  238 PSNR= 14.092 conv  gap=9.61e-03
+  [logcosh ] alpha=    0.03 beta=40  it=   26 PSNR= 32.891 conv  gap=7.10e-03
+  [logcosh ] alpha=     0.1 beta=40  it=  161 PSNR= 37.556 conv  gap=9.60e-03
+  [logcosh ] alpha=     0.3 beta=40  it=  681 PSNR= 37.063 conv  gap=9.97e-03
+  [logcosh ] alpha=       1 beta=40  it= 1500 PSNR= 36.589 trunc gap=3.34e+01
+  [logcosh ] alpha=     0.1 beta=    5 it=  587 PSNR= 29.867 conv  gap=9.62e-03
+  [logcosh ] alpha=     0.1 beta=   20 it=   86 PSNR= 36.932 conv  gap=9.24e-03
+  [logcosh ] alpha=     0.1 beta=   40 it=  161 PSNR= 37.556 conv  gap=9.60e-03
+  [logcosh ] alpha=     0.1 beta=   80 it=  330 PSNR= 37.854 conv  gap=9.85e-03
+  [logcosh ] alpha=     0.1 beta=  160 it=  372 PSNR= 38.017 conv  gap=9.04e-03
+  [logcosh ] alpha=     0.1 beta=  320 it=  637 PSNR= 38.116 conv  gap=9.99e-03
+  [logcosh ] alpha=     0.1 beta=  640 it=  661 PSNR= 38.182 conv  gap=2.58e-03
+  >> logcosh: alpha*=0.1, beta*=640, PSNR*=38.182, conv=True
+  [log1    ] alpha=       1 beta=40  it= 1500 PSNR= 38.125 trunc gap=1.43e+00
+  [log1    ] alpha=       3 beta=40  it=  392 PSNR= 38.134 conv  gap=7.04e-03
+  [log1    ] alpha=      10 beta=40  it=   83 PSNR= 37.824 conv  gap=6.23e-03
+  [log1    ] alpha=      30 beta=40  it=   26 PSNR= 32.018 conv  gap=4.14e-03
+  [log1    ] alpha=     100 beta=40  it=  189 PSNR= 11.171 conv  gap=9.43e-03
+  [log1    ] alpha=     300 beta=40  it=   10 PSNR= 10.681 conv  gap=4.99e-04
+  [log1    ] alpha=       3 beta=    5 it=  268 PSNR= 36.416 conv  gap=9.81e-03
+  [log1    ] alpha=       3 beta=   20 it=  385 PSNR= 37.803 conv  gap=8.53e-03
+  [log1    ] alpha=       3 beta=   40 it=  392 PSNR= 38.134 conv  gap=7.04e-03
+  [log1    ] alpha=       3 beta=   80 it=  512 PSNR= 38.261 conv  gap=9.77e-03
+  [log1    ] alpha=       3 beta=  160 it=  517 PSNR= 38.299 conv  gap=8.80e-03
+  [log1    ] alpha=       3 beta=  320 it=  463 PSNR= 38.310 conv  gap=9.95e-03
+  [log1    ] alpha=       3 beta=  640 it=  524 PSNR= 38.313 conv  gap=8.20e-03
+  >> log1: alpha*=3, beta*=640, PSNR*=38.313, conv=True
+  [huber   ] alpha=       1 beta=40  it= 1500 PSNR= 36.351 trunc gap=8.27e+00
+  [huber   ] alpha=       3 beta=40  it= 1500 PSNR= 36.656 trunc gap=2.45e+00
+  [huber   ] alpha=      10 beta=40  it=  878 PSNR= 37.562 conv  gap=6.67e-03
+  [huber   ] alpha=      30 beta=40  it=  115 PSNR= 38.178 conv  gap=5.50e-03
+  [huber   ] alpha=     100 beta=40  it=   17 PSNR= 38.063 conv  gap=9.54e-03
+  [huber   ] alpha=     300 beta=40  it=   18 PSNR= 37.564 conv  gap=2.89e-03
+  [huber   ] alpha=      30 beta=    5 it=   54 PSNR= 37.747 conv  gap=9.14e-03
+  [huber   ] alpha=      30 beta=   20 it=   78 PSNR= 38.153 conv  gap=1.09e-03
+  [huber   ] alpha=      30 beta=   40 it=  115 PSNR= 38.178 conv  gap=5.50e-03
+  [huber   ] alpha=      30 beta=   80 it=  190 PSNR= 38.186 conv  gap=8.77e-03
+  [huber   ] alpha=      30 beta=  160 it=  303 PSNR= 38.189 conv  gap=5.06e-03
+  [huber   ] alpha=      30 beta=  320 it=  492 PSNR= 38.190 conv  gap=8.84e-03
+  [huber   ] alpha=      30 beta=  640 it=  932 PSNR= 38.190 conv  gap=9.76e-03
+  >> huber: alpha*=30, beta*=640, PSNR*=38.190, conv=True

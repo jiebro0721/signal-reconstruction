@@ -22,12 +22,15 @@ from scipy.optimize import line_search
 # 非线性共轭梯度法
 # ----------------------------------------------------------------------
 
-BETAS = {"prp+": "prp+", "fr": "fr", "hs+": "hs+", "dy": "dy"}
+BETAS = {"prp+": "prp+", "prp": "prp", "fr": "fr", "hs+": "hs+", "dy": "dy"}
 
 
 def beta_rule(rule, g, g_prev, d_prev, y_prev):
     gn = float(np.dot(g, g))
     gy = float(np.dot(g, y_prev))
+    if rule == "prp":
+        den = float(np.dot(g_prev, g_prev))
+        return gy / den if den > 1e-300 else 0.0
     if rule == "prp+":
         den = float(np.dot(g_prev, g_prev))
         b = gy / den if den > 1e-300 else 0.0
@@ -67,12 +70,21 @@ def strong_wolfe_alpha(model, x, d, g, c1=1e-4, c2=0.1):
 
 
 def nonlinear_cg(model, x0, beta="prp+", maxit=5000, tolG=1e-6,
-                 c1=1e-4, c2=0.1, track=False):
-    """非线性 CG 求解光滑目标 (强 Wolfe). 返回 (x, 统计)."""
+                 c1=1e-4, c2=0.1, stop="grad", rel_tol=1e-6, safeguard=True,
+                 fallback=True, track=False):
+    """非线性 CG 求解光滑目标 (强 Wolfe). 返回 (x, 统计).
+
+    stop = "grad" : 梯度无穷范数 ≤ tolG 停止;
+    stop = "rel"  : 相邻两步目标相对变化 ≤ rel_tol 停止 (文献[3,4,5]准则);
+    safeguard=True 时, 方向下降性不足则重启为负梯度;
+    fallback=True 时, 线搜索失败则改用负梯度重试 (工程兜底);
+    两者都设为 False 用于还原原始 PRP 的经典行为 (对照实验).
+    """
     x = np.asarray(x0, dtype=np.float64).copy()
     g = model.gradient(x)
     d = -g.copy()
-    hist_f = [model.value(x)]
+    f_cur = model.value(x)
+    hist_f = [f_cur]
     hist_g = [float(np.max(np.abs(g)))]
     t0 = time.perf_counter()
     it = 0
@@ -81,39 +93,56 @@ def nonlinear_cg(model, x0, beta="prp+", maxit=5000, tolG=1e-6,
             break
         alpha, ls_failed = strong_wolfe_alpha(model, x, d, g, c1, c2)
         if alpha <= 0.0 or ls_failed:
-            # 线搜索失败: 重启为最速下降方向
+            if not fallback:
+                break                      # 经典 PRP: 方向不下降时线搜索失败即停滞
             d = -g.copy()
             alpha, ls_failed = strong_wolfe_alpha(model, x, d, g, c1, c2)
             if alpha <= 0.0:
                 break
         x_new = x + alpha * d
         g_new = model.gradient(x_new)
+        f_new = model.value(x_new)
+        if stop == "rel" and it > 1:
+            rel = abs(f_new - f_cur) / max(abs(f_cur), 1e-12)
+            if rel <= rel_tol:
+                x, g = x_new, g_new
+                hist_f.append(f_new)
+                hist_g.append(float(np.max(np.abs(g))))
+                break
         y_prev = g_new - g
         b = beta_rule(beta, g_new, g, d, y_prev)
         d_new = -g_new + b * d
         gd = float(np.dot(g_new, d_new))
-        # 下降性保障: 不满足充分下降则重启
-        if gd >= -1e-7 * float(np.dot(g_new, g_new)):
+        if safeguard and gd >= -1e-7 * float(np.dot(g_new, g_new)):
             d_new = -g_new.copy()
-        x, g, d = x_new, g_new, d_new
-        hist_f.append(model.value(x))
+        x, g, d, f_cur = x_new, g_new, d_new, f_new
+        hist_f.append(f_cur)
         hist_g.append(float(np.max(np.abs(g))))
     elapsed = time.perf_counter() - t0
+    conv = (stop == "grad" and float(np.max(np.abs(g))) <= tolG) or \
+           (stop == "rel" and len(hist_f) >= 2 and
+            abs(hist_f[-1] - hist_f[-2]) / max(abs(hist_f[-2]), 1e-12) <= rel_tol)
     return dict(x=x, it=it, elapsed=elapsed,
                 hist_f=np.array(hist_f), hist_g=np.array(hist_g),
-                conv=float(np.max(np.abs(g))) <= tolG)
+                conv=bool(conv))
 
 
 def cg_with_mu_continuation(model, x0, mu_seq=(1e-1, 1e-2, 1e-3),
-                            beta="prp+", maxit=3000, tolG=1e-6, **kw):
-    """μ 续延: 由大到小逐段求解, 每段热启动 (与文献[4]同思路)."""
+                            beta="prp+", maxit=2000, tolG=1e-6,
+                            stop="rel", rel_tol=1e-6, safeguard=True, **kw):
+    """μ 续延: 由大到小逐段求解, 每段热启动 (文献[4] 的 μ←0.1μ 方案).
+
+    每段终止默认采用相对目标变化 ≤ rel_tol (文献[3,4,5]准则), 避免小 μ 段
+    因梯度准则过严而病态。
+    """
     x = np.asarray(x0, dtype=np.float64).copy()
     it_sum = 0
     it_hist = []
     conv_all = True
     for mu in mu_seq:
         model.set_mu(float(mu))
-        res = nonlinear_cg(model, x, beta=beta, maxit=maxit, tolG=tolG, **kw)
+        res = nonlinear_cg(model, x, beta=beta, maxit=maxit, tolG=tolG,
+                           stop=stop, rel_tol=rel_tol, safeguard=safeguard, **kw)
         x = res["x"]
         it_sum += int(res["it"])
         it_hist.append(int(res["it"]))

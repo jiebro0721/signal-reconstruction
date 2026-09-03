@@ -50,13 +50,20 @@ def run_case(image, r, seed, save=True):
     t_solve = time.perf_counter() - t0
     xh = y.copy()
     xh[cand] = res["u"]
+    # 基线对照(文献[2] IV: 中值滤波与 AMF 直接输出)
+    from scipy import ndimage
+    med3 = ndimage.median_filter(y, size=3, mode="reflect")
+    med7 = ndimage.median_filter(y, size=7, mode="reflect")
     det = detection_stats(true_mask, cand)
     row = dict(image=image, r=r, seed=seed, wmax=wmax,
                n_cand=det["n_cand"], tpr=det["tpr"], fpr=det["fpr"],
                it=int(res["it"]), t_amf=t_amf, t_solve=t_solve,
                psnr=psnr(x, xh), snr=snr(x, xh), mae=mae(x, xh),
                psnr_n=psnr(x[cand], xh[cand]), converged=bool(res["converged"]),
-               gap=float(res["hist_gap"][-1]))
+               gap=float(res["hist_gap"][-1]),
+               psnr_noisy=psnr(x, y), psnr_med3=psnr(x, med3),
+               psnr_med7=psnr(x, med7), psnr_amf=psnr(x, y_amf),
+               snr_amf=snr(x, y_amf))
     if save:
         import tifffile
         tifffile.imwrite(os.path.join(RST, f"{os.path.splitext(image)[0]}_r{int(r*100)}_s{seed}.tif"),
@@ -87,7 +94,8 @@ def main():
         for r in (0.3, 0.5):
             sub = [q for q in rows if q["image"] == image and abs(q["r"] - r) < 1e-9]
             summary[(image, r)] = sub
-    keys = ["it", "t_amf", "t_solve", "psnr", "snr", "mae", "psnr_n", "tpr", "fpr"]
+    keys = ["it", "t_amf", "t_solve", "psnr", "snr", "mae", "psnr_n", "tpr", "fpr",
+            "psnr_noisy", "psnr_med3", "psnr_med7", "psnr_amf", "snr_amf"]
     with open(os.path.join(TAB, "problem1_summary.csv"), "w", newline="", encoding="utf-8-sig") as f:
         w = csv.writer(f)
         w.writerow(["image", "r", "n_cand", "wmax"] + [f"{k}_mean" for k in keys] +
