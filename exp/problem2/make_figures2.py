@@ -1,5 +1,5 @@
 """问题二作图: (1) 各势函数 PSNR-α 曲线; (2) 最终指标条形图; (3) 恢复对比图."""
-import sys, os, re, time
+import sys, os, re, time, json
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
@@ -132,11 +132,81 @@ def fig_restored(image="lena_gray_512.tif", r=0.3, params=None):
     print("fig: restored panels")
 
 
+def fig_potential_shapes(params=None):
+    """五种势函数的形状与导数对比图（机理分析用; 参数取 30% 标定值）."""
+    import json
+    if params is None:
+        params = json.load(open(os.path.join(TAB, "problem2_params.json")))
+    t = np.linspace(-150, 150, 600)
+    alphas = {}
+    for pot_ in POT_LABEL:
+        v = params[pot_]
+        alphas[pot_] = v["0.3"][0] if isinstance(v, dict) else v[0]
+    fig, axes = plt.subplots(1, 2, figsize=(8.6, 3.0))
+    for pot_ in POT_LABEL:
+        from restoration_model import POTENTIALS as PP
+        f, df, fs, dfs = PP[pot_]
+        a = alphas[pot_]
+        axes[0].plot(t, np.where(np.abs(t) < 1e-12, 0, f(t, a)), lw=1.3,
+                     color=COLOR[pot_], label=POT_LABEL[pot_])
+        axes[1].plot(t, df(t, a), lw=1.3, color=COLOR[pot_])
+    axes[0].axhline(255, color="gray", ls=":", lw=0.8)
+    axes[0].set_xlabel("$t$"); axes[0].set_ylabel(r"$\varphi_\alpha(t)$")
+    axes[0].set_title("势函数形状   $|t|$ 虚线为参考")
+    axes[0].grid(alpha=.3); axes[0].legend(fontsize=7)
+    axes[1].axhline(1.0, color="gray", ls=":", lw=0.8)
+    axes[1].axhline(-1.0, color="gray", ls=":", lw=0.8)
+    axes[1].set_xlabel("$t$"); axes[1].set_ylabel(r"$\varphi_\alpha'(t)$")
+    axes[1].set_title("势函数导数   ±1 虚线为渐近界")
+    axes[1].grid(alpha=.3)
+    fig.tight_layout()
+    fig.savefig(os.path.join(FIG, "potential_shapes.png"), dpi=200)
+    plt.close(fig)
+    print("fig: potential_shapes")
+
+
+def fig_beta_sensitivity():
+    """从调参日志提取各势函数的 β 敏感性曲线（在各自 α* 处）."""
+    txt = open(os.path.join(TAB, "problem2_tuning.txt"), encoding="utf-8").read()
+    cur_r = None
+    data = {}
+    for line in txt.splitlines():
+        m = re.match(r"== r=(\d+)%", line)
+        if m:
+            cur_r = float(m.group(1)) / 100.0
+            continue
+        m = re.match(r"\s*\[\s*(\w+)\s*\]\s+alpha=\s*([0-9.eE+-]+)"
+                     r"\s+beta=\s*([0-9.]+)\s+it=\s*(\d+).*PSNR=\s*([0-9.]+)", line)
+        if m and cur_r is not None:
+            beta = float(m.group(3))
+            if beta != 40.0:   # 只取 β 扫描行
+                data.setdefault((m.group(1), cur_r), []).append(
+                    (beta, float(m.group(5))))
+    fig, axes = plt.subplots(1, 2, figsize=(8.6, 3.0))
+    for r, ax in zip((0.3, 0.5), axes):
+        for pot_ in POT_LABEL:
+            pts = sorted(data.get((pot_, r), []))
+            if pts:
+                ax.plot([p[0] for p in pts], [p[1] for p in pts], "o-", ms=4,
+                        lw=1.3, color=COLOR[pot_], label=POT_LABEL[pot_])
+        ax.set_xscale("log"); ax.set_xlabel(r"$\beta$")
+        ax.set_ylabel("PSNR (dB)")
+        ax.set_title(r"Lena 512, r=%.0f%% (α=α$^*$)" % (r * 100))
+        ax.grid(alpha=.3); ax.legend(fontsize=7)
+    fig.tight_layout()
+    fig.savefig(os.path.join(FIG, "beta_sensitivity.png"), dpi=200)
+    plt.close(fig)
+    print("fig: beta_sensitivity")
+
+
 def main():
     data = parse_tuning()
     fig_alpha_curves(data)
     fig_metrics()
-    fig_restored("lena_gray_512.tif", 0.3)
+    params = json.load(open(os.path.join(TAB, "problem2_params.json")))
+    fig_potential_shapes(params)
+    fig_beta_sensitivity()
+    fig_restored("lena_gray_512.tif", 0.3, params)
     print("done")
 
 
