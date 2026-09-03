@@ -7,7 +7,8 @@
    文献 [1] 提出的 **GPSR 投影梯度算法**求解，构建迭代次数 / 时间 / SNR / PSNR 评价体系；
 2. **问题二（已完成）**：5 种保边势函数 $\varphi_\alpha$ 对恢复效果的影响
    （各自参数标定下的公平比较 + 鲁棒性/收敛性分析）；
-3. **问题三（待做）**：修正 PRP 共轭梯度法重构稀疏信号并与 GPSR 比较。
+3. **问题三（已完成）**：修正 PRP+ 共轭梯度法（光滑化 + μ 续延）重构 n=4096、
+   160 尖峰的稀疏信号，与文献 [1] GPSR-BB 的完整对比（同目标值口径 + 去偏置）。
 
 ## 目录结构
 
@@ -20,6 +21,8 @@ signal-reconstruction/
 │   ├── amf.py               #   第一阶段: 自适应中值滤波 (AMF) 检测
 │   ├── restoration_model.py #   第二阶段: 光滑化保边泛函 (5种势函数/光滑函数/梯度)
 │   ├── solvers.py           #   GPSR-Basic / GPSR-BB 投影梯度求解器 (含续延)
+│   ├── sparse_reconstruction.py # 问题三: 稀疏信号/测量矩阵生成 + 光滑化 ℓ1-二次模型
+│   ├── cg_solvers.py        #   问题三: 非线性CG(PRP+/FR/HS+/DY, 强Wolfe) + GPSR-BCQP
 │   └── metrics.py           #   PSNR / SNR / MAE / SSIM / 边缘PSNR / 检测统计
 ├── exp/
 │   ├── problem1/            # 问题一实验
@@ -38,9 +41,15 @@ signal-reconstruction/
 │       ├── run_problem2.py      #   ★ 主实验 (3图×{30%,50%}×2种子×5势函数, 含 OOS 汇总)
 │       ├── make_figures2.py     #   PSNR-α 曲线 / 指标条形图 / 恢复对比图
 │       └── results/             #   表 (csv/json/txt), 图 (png)
+│   └── problem3/            # 问题三实验
+│       ├── sanity_check.py      #   实例生成/梯度FD/两算法收敛性验证
+│       ├── run_problem3.py      #   ★ 主实验 (10实例 × 8方法, 含同目标值口径)
+│       ├── make_figures3.py     #   收敛曲线/信号对比/汇总条形图
+│       └── results/             #   表 (csv/json), 图 (png)
 └── docs/
     ├── problem1_model.md    # ★ 问题一完整数学建模与算法原理文档
-    └── problem2_model.md    # ★ 问题二完整数学建模与实验分析文档
+    ├── problem2_model.md    # ★ 问题二完整数学建模与实验分析文档
+    └── problem3_model.md    # ★ 问题三完整数学建模与对比实验文档
 ```
 
 ## 运行环境
@@ -85,6 +94,10 @@ python exp/problem2/make_figures2.py         # 图
   与 Huber 对 $\alpha$ 鲁棒且收敛快；$|t|^{\alpha}$（α<2）导数无界导致
   1500 步不收敛（截断平台，PSNR 仅再 +0.003 dB）；$\log\cosh$ /
   $|t|/\alpha-\log$ 在 α 偏大时正则失效。
+- 问题三：CG-PRP+（光滑化 + μ 续延至 1e-4）与 GPSR-BB 均恢复全部 160 个
+  尖峰；去偏置后相对误差持平（0.0267 vs 0.0265）；同目标值口径下 GPSR-BB
+  更快（29 步/0.09 s vs 257 步/2.1 s，问题结构使然）；共轭参数对照：
+  PRP+/HS+ ~280 步，FR/DY ~1540 步——修正 PRP+ 的截断设计效果显著。
 
 ## 审查修复记录
 
