@@ -24,9 +24,12 @@ os.makedirs(TAB, exist_ok=True)
 os.makedirs(FIG, exist_ok=True)
 
 N, K, KTRUE, SIGMA2, SEEDS = 4096, 1024, 160, 1e-4, list(range(10))
-MU_SEQ, TOLG = (1e-1, 1e-2, 1e-3, 1e-4), 1e-6
+MU_SEQ, TOLG = (1e-1, 1e-2, 1e-3, 1e-4, 1e-5, 1e-6), 1e-6
+REL_TOL = 1e-6               # 分段相对目标变化停止准则 (文献[3,4,5])
 TOLP_GPSR, MAXIT_GPSR = 1e-3, 3000
-MAXIT_CG = 4000
+MAXIT_CG = 2000
+# 初值策略(文献[4]): CG 用 x0 = Aᵀb; GPSR 用 z0 = 0 (文献[1]实现)
+CG_X0 = "atb"
 
 
 def l1_obj(A, b, tau, x):
@@ -41,8 +44,8 @@ def support_stats(x, xtrue, thresh=0.05):
 
 
 def cg_until_target(A, b, tau, model, x0, target, mu_seq=MU_SEQ,
-                    maxit=MAXIT_CG, tolG=TOLG):
-    """μ 续延 CG, 同时跟踪 ℓ1 目标值, 报告达到 1.001×target 的累计迭代/时间."""
+                    maxit=MAXIT_CG, tolG=TOLG, rel_tol=REL_TOL):
+    """μ 续延 CG, 逐段以相对目标变化停止, 报告达到 1.001×target 的累计迭代/时间."""
     xk = np.asarray(x0, dtype=np.float64).copy()
     acc_it = 0
     t_start = time.perf_counter()
@@ -50,6 +53,7 @@ def cg_until_target(A, b, tau, model, x0, target, mu_seq=MU_SEQ,
         model.set_mu(float(mu))
         gk = model.gradient(xk)
         d = -gk.copy()
+        f_cur = model.value(xk)
         for _ in range(maxit):
             if float(np.max(np.abs(gk))) <= tolG:
                 break
@@ -58,15 +62,18 @@ def cg_until_target(A, b, tau, model, x0, target, mu_seq=MU_SEQ,
                 break
             xk = xk + alpha * d
             g_new = model.gradient(xk)
-            y_ = g_new - gk
-            bb = beta_rule("prp+", g_new, gk, d, y_)
-            d = -g_new + bb * d
-            if float(np.dot(g_new, d)) >= -1e-7 * float(np.dot(g_new, g_new)):
-                d = -g_new.copy()
-            gk = g_new
+            f_new = model.value(xk)
             acc_it += 1
             if l1_obj(A, b, tau, xk) <= 1.001 * target:
                 return xk, acc_it, time.perf_counter() - t_start
+            if acc_it > 0 and abs(f_new - f_cur) / max(abs(f_cur), 1e-12) <= rel_tol:
+                gk, f_cur = g_new, f_new
+                break
+            bb = beta_rule("prp+", g_new, gk, d, g_new - gk)
+            d = -g_new + bb * d
+            if float(np.dot(g_new, d)) >= -1e-7 * float(np.dot(g_new, g_new)):
+                d = -g_new.copy()
+            gk, f_cur = g_new, f_new
     return xk, acc_it, time.perf_counter() - t_start
 
 
@@ -74,7 +81,7 @@ def run_instance(seed):
     A, x, b = make_instance(m=K, n=N, k_true=KTRUE, sigma2=SIGMA2, seed=seed)
     tau = tau_gpsr(A, b)
     model = SmoothedL1Quad(A, b, tau, mu=1e-3)
-    x0 = np.zeros(N)
+    x0 = A.T @ b if CG_X0 == "atb" else np.zeros(N)
     xnorm = float(np.linalg.norm(x))
     rows = []
 
@@ -97,13 +104,19 @@ def run_instance(seed):
                      tp=support_stats(gd["x"], x)[0], fp=support_stats(gd["x"], x)[1],
                      conv=True, it_to_target=g["it"], t_to_target=gd_elapsed))
 
-    # ---------- CG: 共轭参数对照 (单段 μ=1e-3, 到 tolG) ----------
-    for beta in ("prp+", "fr", "hs+", "dy"):
+    # ---------- CG: 共轭参数对照 (单段 μ=1e-3, 相对目标变化停止, 初值 Aᵀb) ----------
+    for beta, sfg, fb, name in (("prp+", True, True, "CG-PRP+"),
+                                ("prp", False, False, "CG-PRP无截断"),
+                                ("fr", True, True, "CG-FR"),
+                                ("hs+", True, True, "CG-HS+"),
+                                ("dy", True, True, "CG-DY")):
         model.set_mu(1e-3)
         t0 = time.perf_counter()
-        r = nonlinear_cg(model, x0, beta=beta, maxit=MAXIT_CG, tolG=TOLG)
+        r = nonlinear_cg(model, x0, beta=beta, maxit=MAXIT_CG, tolG=TOLG,
+                         stop="rel", rel_tol=REL_TOL,
+                         safeguard=sfg, fallback=fb)
         el = time.perf_counter() - t0
-        rows.append(dict(method=f"CG-{beta}", it=r["it"], t=el,
+        rows.append(dict(method=name, it=r["it"], t=el,
                          rel=np.linalg.norm(r["x"] - x) / xnorm,
                          obj=l1_obj(A, b, tau, r["x"]),
                          tp=support_stats(r["x"], x)[0], fp=support_stats(r["x"], x)[1],
@@ -113,7 +126,8 @@ def run_instance(seed):
     # ---------- CG-PRP+ μ 续延 (主算法) + 同目标值对比 ----------
     t0 = time.perf_counter()
     r = cg_with_mu_continuation(model, x0, mu_seq=MU_SEQ, beta="prp+",
-                                maxit=MAXIT_CG, tolG=TOLG)
+                                maxit=MAXIT_CG, tolG=TOLG,
+                                stop="rel", rel_tol=REL_TOL, safeguard=True)
     cg_elapsed = time.perf_counter() - t0
     xhat = r["x"]
     _, it_at, t_at = cg_until_target(A, b, tau, model, x0, obj_t)
