@@ -1,0 +1,3 @@
+variant,it_mean,time_mean_same_machine_s,rel_mean,obj_mean,decision
+repository_secant,29.1,0.204814,0.236583304969,6.698346137227,keep_as_default
+reference_projected,28.5,0.232943,0.236622765750,6.698346362194,optional_validation_only

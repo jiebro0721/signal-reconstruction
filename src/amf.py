@@ -88,8 +88,8 @@ def adaptive_median_filter(y, r=0.3, wmax=None, s_min=0.0, s_max=255.0,
     #   - 步骤5: s_min < y < s_max 则非候选, 否则为候选;
     #   - Algorithm III 步骤1: 噪声候选集 N = {(i,j): y_ij ∈ {s_min,s_max} 且 ŷ_ij ≠ y_ij},
     #     即只把"取值为端点值且被 AMF 替换过"的像素判为候选(噪声像素取值恰为端点值,
-    #     未发生替换说明窗口无信息, 将其留给第二阶段的数据保真项处理亦可, 但按文献
-    #     定义从候选集中排除, 避免把平坦区间内的同值干净像素误判为噪声)。
+    #     未发生替换说明窗口无有效替换信息；按文献定义从候选集中排除并在第二阶段
+    #     保持固定，避免把平坦区间内的同值干净像素误判为噪声)。
     exhausted = active.copy()               # 从未获得满足窗口的像素(窗口耗尽)
     amf_cand = exhausted | ~((smin < y) & (y < smax))
     y_amf = y.copy()
