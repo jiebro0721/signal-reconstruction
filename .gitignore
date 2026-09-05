@@ -4,6 +4,12 @@ __pycache__/
 .pytest_cache/
 .ipynb_checkpoints/
 
+# LaTeX 中间产物
+*.aux
+*.log
+*.out
+*.toc
+
 # 大体积恢复图 / 掩膜 (表与图在 results/(tables|figures)/ 下入库)
 exp/problem1/results/restored/
 exp/problem2/results/restored/
