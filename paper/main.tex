@@ -1,7 +1,6 @@
 % 全国大学生数学建模竞赛论文 —— 基于光滑化策略与梯度类算法的信号重构问题研究
 % 编译: xelatex main.tex (两次)
 \documentclass[withoutpreface,bwprint]{cumcmthesis}
-
 \usepackage{cumcm2026}
 \usepackage{subcaption}
 \usepackage{booktabs}
@@ -23,7 +22,7 @@
 % 三线表伪代码环境（仿优秀论文 Algorithm 样式）
 \newenvironment{algtable}[1]{%
   \par\medskip\noindent
-  \begin{minipage}{\textwidth}\small
+  \begin{minipage}{\textwidth}\scriptsize
   \begin{tabular}{p{\dimexpr\textwidth-2\tabcolsep}}
     \toprule
     \textbf{#1} \\
@@ -66,19 +65,19 @@
 形式；再次，以平方根型光滑函数逼近绝对值函数，并由最大值原理把模型约束到像素
 动态范围，得到盒约束光滑凸问题；最后，设计 BB 步长的投影梯度算法求解。在
 12 张标准测试图、2 个噪声等级、3 组随机种子共 72 个算例上全部收敛，平均恢复
-PSNR 为 37.33 dB 与 33.76 dB；Lena 图 30\% 噪声下达 38.35 dB，较文献同类方法
-报告值 36.99 dB 提高约 1.36 dB，较自适应中值滤波直接输出提高 4.47 dB。
+PSNR 为 37.33 dB 与 33.76 dB；Lena 图在 30\% 噪声下达到 38.35 dB，
+较自适应中值滤波直接输出提高 4.47 dB。
 
 针对问题二，将五种保边势函数置于同一恢复框架下，先逐一分析其光滑性、导数
-有界性与原点曲率等解析性质，再按``各自独立标定参数、样本外验证''的协议公平
-比较。结果表明：各势函数在最优参数下恢复质量几乎一致（PSNR 极差 0.19 dB 与
-0.13 dB），差异主要体现在参数鲁棒性与收敛速度——平方根型与 Huber 型呈宽平台
-且收敛最快，对数余弦型与对数型存在悬崖式退化，收敛速度最优与最差相差约
-6--14 倍；据此建议优先选用平方根型或 Huber 型势函数。
+有界性与原点曲率等解析性质，再按``各自独立标定参数、统一条件下做参数迁移验证''
+的协议比较。结果表明：各势函数在标定参数下恢复质量接近（PSNR 极差 0.19 dB 与
+0.13 dB），差异主要体现在参数敏感性与收敛速度。平方根型的参数平台较宽且
+收敛最快；光滑化幂函数型的恢复质量与效率也较稳定；对数余弦型、对数型和
+Huber 型在本文求解配置下需要更多迭代。据此优先推荐平方根型或光滑化幂函数型。
 
 针对问题三，将光滑化策略迁移到 $\ell_1$ 正则化最小二乘，配合光滑参数逐级续延，
-用修正 PRP 共轭梯度法（强 Wolfe 线搜索与下降性重启）求解，并与变量分裂框架下的
-GPSR-BB 投影梯度法在完全一致的实例上对比。在文献一致的 4096 维、160 尖峰实例上，
+用修正 PRP 共轭梯度法求解，并与变量分裂框架下的
+GPSR-BB 投影梯度法在完全一致的实例上对比。在 4096 维、160 尖峰实例上，
 两法均完整恢复全部非零元；按``同目标值''口径修正 PRP 的迭代数为 GPSR 的 4.2 倍，
 去偏置后相对误差 0.0286 对 0.0265，恢复质量基本持平；共轭参数对照显示修正 PRP
 与 HS 参数的迭代数不到 FR 与 DY 参数的四分之一。
@@ -97,29 +96,28 @@ GPSR-BB 投影梯度法在完全一致的实例上对比。在文献一致的 40
 领域发挥着关键作用。图像恢复是其中的经典问题：图像可能因传输过程中的噪声、
 压缩、失真、模糊等原因受损，需要从受损观测中重建清晰图像。椒盐噪声是最具
 代表性的脉冲噪声，受污染像素的灰度值退化为动态范围的两个端点，其真实值完全
-丢失，因此恢复工作分为``检测哪些像素被污染''与``恢复被污染像素''两个阶段
-\cite{chan2005}。稀疏信号重构则是压缩感知的核心问题：利用远少于信号维数的
-线性观测恢复稀疏信号，可归结为 $\ell_1$ 正则化最小二乘模型 \cite{figueiredo2008}。
+丢失，因此恢复工作分为``检测哪些像素被污染''与``恢复被污染像素''两个阶段\cite{chan2005}。
+稀疏信号重构则是压缩感知的核心问题：利用远少于信号维数的线性观测恢复稀疏信号，
+可归结为 $\ell_1$ 正则化最小二乘模型\cite{figueiredo2008}。
 
 两类问题的共同数学本质是带有 $\ell_1$ 型非光滑项的凸优化：目标函数中的绝对值
-项不可微，常用梯度类算法无法直接使用。光滑化策略 \cite{wu2021,chen2010} 用一族
+项不可微，常用梯度类算法无法直接使用。光滑化策略\cite{wu2021,chen2010}用一族
 误差受控的光滑函数逼近绝对值函数，把非光滑问题化为光滑问题，是处理此类问题的
 通用技巧。本文即以光滑化为主线，配合盒约束化技术与梯度类优化算法，系统研究
 题目给出的三个问题。
 
 \subsection{问题提出}
 
-\textbf{问题一}：采用光滑化策略建立图像恢复问题的优化模型，结合
-文献\cite{figueiredo2008}数值实验代码，对噪声等级为 $30\%$ 与 $50\%$ 的
-salt-and-pepper 噪声模型，借助文献\cite{figueiredo2008}提出的投影梯度算法求解，
+\textbf{问题一}：采用光滑化策略建立图像恢复问题的优化模型，对噪声等级为
+$30\%$ 与 $50\%$ 的 salt-and-pepper 噪声模型，使用投影梯度算法求解，
 并构建所需迭代次数、消耗时间、信噪比 SNR、峰值信噪比 PSNR 等评价指标。
 
 \textbf{问题二}：图像恢复模型中涉及保边势函数 $\varphi_{\alpha}$，题目给出五种
-候选\cite{cai2007}，要求探索保边势函数的不同选择对图像恢复效果的影响。
+候选，要求探索保边势函数的不同选择对图像恢复效果的影响。
 
-\textbf{问题三}：采用修正 PRP 共轭梯度算法\cite{liu2025,narushima2011}，重构
+\textbf{问题三}：采用修正 PRP 共轭梯度算法，重构
 长度为 $2^{12}$ 且包含 160 个随机产生的 $\pm1$ 非零元素的稀疏信号，并与
-文献\cite{figueiredo2008}的 GPSR 算法进行对比。
+GPSR 算法进行对比。
 
 \section{问题分析}
 
@@ -132,31 +130,38 @@ salt-and-pepper 噪声模型，借助文献\cite{figueiredo2008}提出的投影�
 需要在数据保真项与邻域正则项之间权衡；其中 $\ell_1$ 数据项不可微，这是求解的
 主要障碍。接着，处理非光滑性的通用技巧是光滑化，即用一族误差受控的光滑函数
 逼近绝对值函数；光滑化后问题成为光滑凸问题，再利用最大值原理把求解域限制到
-像素动态范围内，即得盒约束光滑凸问题。最后，文献\cite{figueiredo2008}提出的
-GPSR 投影梯度算法正是求解盒约束光滑凸问题的有效方法，本文沿其 BB 步长框架设计
+像素动态范围内，即得盒约束光滑凸问题。最后，采用 GPSR 投影梯度算法求解该
+盒约束光滑凸问题，并沿 BB 步长框架设计
 求解器，并构建迭代数、时间、SNR、PSNR 等指标进行评价。
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{figures/overall_flowchart_user.png}
+  \caption{全文研究框架与三个问题的求解流程}
+  \label{fig:overall_flowchart}
+\end{figure}
 
 \subsection{问题二的分析}
 
-问题二在问题一的框架内比较五种保边势函数，本质是研究正则项这一组件对恢复效果
-的敏感性。首先，五族势函数均为偶、凸、关于绝对值严格递增的函数，共同满足保边
-性质的一般要求；其差异体现在原点附近的二阶导（局部平滑强度）、远离原点的增长
-方式与导数有界性三方面，其中第三点直接决定目标函数的条件数并影响收敛速度。
-其次，各势函数的参数语义与量纲不同，统一参数不可行，必须对每种势函数独立标定
-最优参数后再比较。再次，标定应避免网格截断与未收敛解造成的系统偏差，选优时
-优先考虑收敛解。最后，为排除``在标定图像上过拟合''的质疑，需额外输出剔除标定
-图像的样本外汇总。
+问题二要求比较五种保边势函数对图像恢复结果的影响。本文沿用问题一的两阶段方法：
+第一阶段仍使用 AMF 检测噪声位置，第二阶段保持数据保真项、邻域结构和求解算法不变，
+仅替换正则项中的势函数。由于五种势函数的参数含义和数值尺度不同，本文分别标定其
+参数，并在相同图像、噪声条件和停止准则下比较恢复质量与求解效率，最后确定较优的
+势函数。
 
 \subsection{问题三的分析}
 
 问题三是大规模稀疏信号重构，其模型为 $\ell_1$ 正则化最小二乘，同样非光滑。
-首先，文献\cite{figueiredo2008}的方法通过变量分裂把模型化为有界约束二次规划后
+首先，通过变量分裂把模型化为有界约束二次规划\cite{figueiredo2008}后
 用投影梯度求解，形成第一条技术路线；本文则沿用问题一的光滑化路线，把 $\ell_1$
 项光滑化后用非线性共轭梯度法求解，形成第二条技术路线，二者构成正面对比。
-其次，修正 PRP 共轭参数的非负截断保证全局收敛性\cite{gilbert1992}，同时保留
-PRP 算法数值上的优良性能；实现中需配合强 Wolfe 线搜索与下降性重启。
+其次，修正 PRP 共轭参数采用非负截断，并配合强 Wolfe 线搜索与下降性重启；
+只有在水平集有界、梯度 Lipschitz 连续且线搜索等条件成立时，才可引用相应的
+全局收敛结论\cite{gilbert1992}，不能把非负截断本身等同于收敛保证。
 最后，两算法的停止准则与迭代机制不同，比较时须采用``达到相同目标值''的口径，
 并对 $\ell_1$ 解的幅度收缩做去偏置处理，比较才有意义。
+
+三个问题的总体研究框架与求解流程如图~\ref{fig:overall_flowchart} 所示。
 
 \section{模型假设}
 
@@ -182,6 +187,7 @@ PRP 算法数值上的优良性能；实现中需配合强 Wolfe 线搜索与下
   \toprule[1.5pt]
   符号 & 说明 & 单位 \\
   \midrule[1pt]
+  $A$ & 图像像素索引集 $\{1,\ldots,M\}\times\{1,\ldots,N\}$（问题三中 $A$ 为测量矩阵，按所在问题区分） & -- \\
   $y_{i,j}$ & 观测图像在位置 $(i,j)$ 的灰度值（问题三中观测向量为 $b$） & 灰度级 \\
   $u_{p}$ & 候选噪声像素 $p$ 的恢复值（决策变量） & 灰度级 \\
   $x_{i}$ & 待重构稀疏信号的第 $i$ 个分量 & -- \\
@@ -197,7 +203,7 @@ PRP 算法数值上的优良性能；实现中需配合强 Wolfe 线搜索与下
 \end{tabular}
 \end{center}
 
-其余仅在单一问题中使用的符号（如索引集、噪声候选集 $\Omega$、测量矩阵 $A$ 等）
+其余仅在单一问题中使用的符号（如噪声候选集 $\Omega$、测量矩阵 $A$ 等）
 在其首次出现处随公式逐一说明。
 
 \section{问题一模型的建立与求解}
@@ -215,9 +221,22 @@ $s_{\max}=255$。经典 salt-and-pepper（椒盐）噪声模型下，观测像�
     x_{i,j}, & \text{其余},
   \end{cases}
 \end{equation}
-其中 $x_{i,j}$ 为原始像素值，$r=p+q$ 称为噪声等级。本文取 $p=q=\frac{r}{2}$。
-由于受污染像素的真实值完全丢失，无法对单个像素单独修复，必须采用文献
-\cite{chan2005}的两阶段方法：第一阶段检测出噪声像素的候选集 $\Omega$ 并给出
+其中 $x_{i,j}$ 为原始像素值，$r=p+q$ 称为噪声等级。本文取
+$p=q=r/2$。
+为直观说明椒盐噪声的生成过程，以 Lena 灰度图像为例。对每个像素独立生成随机数
+$\xi_{i,j}\sim U(0,1)$：当 $\xi_{i,j}<p$ 时，将像素置为 $s_{\min}=0$；当
+$\xi_{i,j}\ge 1-q$ 时，将像素置为 $s_{\max}=255$；其余情况下保持原像素值不变。
+图~\ref{fig:noise_generation} 给出了一个 $3\times3$ 局部区域的加噪过程。
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=\textwidth]{figures/noise_model_lena_3x3_preview.png}
+  \caption{Lena 图像的椒盐噪声生成过程（$r=30\%$）}
+  \label{fig:noise_generation}
+\end{figure}
+
+由于受污染像素的真实值完全丢失，无法对单个像素单独修复，因此采用两阶段方法：
+第一阶段检测出噪声像素的候选集 $\Omega$ 并给出
 初值，第二阶段仅在 $\Omega$ 上通过最小化一个保边正则化泛函恢复像素。下面依次
 建立两个阶段的模型。
 
@@ -228,22 +247,34 @@ $s_{\max}=255$。经典 salt-and-pepper（椒盐）噪声模型下，观测像�
 （Adaptive Median Filter, AMF）\cite{chan2005}的改进在于两点：其一，只对疑似
 噪声像素做替换；其二，当窗口内没有足够的正常灰度层次时自动扩大窗口。
 
-记 $S_{i,j}^{w}=\{(k,l):|k-i|\le w,\ |j-l|\le w\}$ 为中心在 $(i,j)$ 的
-$w\times w$ 窗口，$w_{\max}$ 为允许的最大窗口。AMF 的判据来自如下观察：若窗口
+对奇数窗口边长 $w$，记半径 $h=(w-1)/2$，并定义
+$S_{i,j}^{w}=\{(k,l):|k-i|\le h,\ |l-j|\le h\}$；当 $(k,l)\notin A$ 时，
+其灰度值按下文的反射规则由边界内像素补齐。于是 $S_{i,j}^{w}$ 表示中心在 $(i,j)$
+的 $w\times w$ 窗口，
+$w_{\max}$ 为允许的最大窗口边长。AMF 的判据来自如下观察：若窗口
 内同时存在正常的明暗层次，即
 \begin{equation}
   s_{\min}^{w}<s_{\mathrm{med}}^{w}<s_{\max}^{w},
 \end{equation}
 其中 $s_{\min}^{w},s_{\mathrm{med}}^{w},s_{\max}^{w}$ 分别为窗口内灰度的最小值、
 中位数与最大值，则窗口信息足以作出判决；否则说明窗口内灰度几乎相同（噪声成片），
-需扩大窗口再试。具体流程为：对每个像素从 $w=3$ 开始，逐级检验上式，不满足则
-$w\leftarrow w+2$，直至满足或达到 $w_{\max}$；达到上限仍不满足的像素无条件判为
+需扩大窗口再试。具体流程为：对每个像素依次取 $w=3,5,7,\ldots,w_{\max}$ 逐级检验
+上式，直至满足或达到 $w_{\max}$；达到上限仍不满足的像素判为
 噪声并用 $w_{\max}$ 窗口的中值替换。对最终窗口，用极值判决
-$s_{\min}^{W}<y_{i,j}<s_{\max}^{W}$ 区分保真像素与噪声像素。实现中边界像素采用
-对称（反射）扩展，$w_{\max}$ 按噪声等级从文献表格选取：$30\%$ 取 $7\times7$，
+$s_{\min}^{w^*}<y_{i,j}<s_{\max}^{w^*}$ 区分保真像素与噪声像素，其中 $w^*$ 为
+该像素停止扩张时的窗口边长。实现中边界像素采用 SciPy \texttt{ndimage} 的
+\texttt{reflect} 约定，即反射时重复端点像素；这与 NumPy \texttt{pad} 中同名
+模式的端点约定不同。$w_{\max}$ 按噪声等级设定：$30\%$ 取 $7\times7$，
 $50\%$ 取 $9\times9$。
 
-噪声候选集采用文献\cite{chan2005}的``两条件''定义：
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=.92\textwidth]{figures/reflect_padding_matrix_preview.png}
+  \caption{SciPy \texttt{reflect} 约定下的边界像素扩展示意}
+  \label{fig:reflect_padding}
+\end{figure}
+
+结合像素端点取值与 AMF 的替换结果，定义噪声候选集为\cite{chan2005}：
 \begin{equation}
   \Omega=\big\{(i,j)\in A:\ y_{i,j}\in\{s_{\min},s_{\max}\}\ \text{且}\
   \hat y_{i,j}\neq y_{i,j}\big\},
@@ -258,7 +289,7 @@ $50\%$ 取 $9\times9$。
 \subsection{第二阶段：保边正则化恢复模型}
 
 第二阶段仅在 $\Omega$ 上恢复像素。为使恢复结果``去噪的同时保留边缘''，需要
-引入正则化的思想：在数据拟合之外，对解的空间振荡施加惩罚。图像的边缘指相邻
+引入正则化的思想。图像的边缘指相邻
 像素灰度发生跃变的位置，其数学表现是相邻像素差值 $u_p-u_q$ 较大。若用二次
 函数惩罚邻域差，则跃变处的代价极高，恢复时会把边缘一并抹平；反之，若惩罚函数
 在差值大时仅按线性增长（如 $|t|$），则大差值所受的额外惩罚有限，边缘得以保留。
@@ -269,7 +300,7 @@ $\varphi_{\alpha}(t)$，$\alpha>0$ 为其参数。问题一主实验取
   \label{eq:phisqrt}
 \end{equation}
 它处处光滑（$C^{\infty}$），$t=0$ 处二阶导 $\varphi_{\alpha}''(0)=1/\sqrt{\alpha}$
-有界，且 $|t|$ 很大时 $\varphi_{\alpha}(t)\to|t|$，兼具平滑性与保边性；其余四种
+有界，且 $|t|$ 很大时 $\varphi_{\alpha}(t)-|t|\to0$，兼具平滑性与保边性；其余四种
 候选势函数在问题二中系统比较。
 
 沿用题目式 (2)，第二阶段的目标函数为
@@ -283,21 +314,23 @@ $\varphi_{\alpha}(t)$，$\alpha>0$ 为其参数。问题一主实验取
   \qquad
   S_2=\sum_{(m,n)\in V_{i,j}\cap\Omega}\varphi_{\alpha}(u_{i,j}-u_{m,n}),
 \end{equation}
-其中 $V_{i,j}=\{(i,j-1),(i,j+1),(i-1,j),(i+1,j)\}$ 为位置 $(i,j)$ 的四邻域，
-$\Omega^{C}$ 为 $\Omega$ 在 $A$ 中的补集。$S_1$ 处理候选像素与干净邻居的边，
-$S_2$ 处理两个候选像素之间的边；因子 2 来源于 $\varphi_{\alpha}$ 的偶对称性：
-在全集 $A$ 上求和时，$\Omega$ 与 $\Omega^{C}$ 之间的每条边由两端点各计一次，
-即 $\varphi_{\alpha}(u-y)+\varphi_{\alpha}(y-u)=2\varphi_{\alpha}(u-y)$，而
-式~\eqref{eq:p2model} 仅在 $\Omega$ 上求和，需以因子 2 补偿被省略的一端。需要
-说明的是，题目式 (2) 中 $S_2$ 的被减项印作 $y_{m,n}$，按文献\cite{chan2005}
-原式应为 $u_{m,n}$（未检测像素保持观测值不变），本文按后者实现。
+其中 $V_{i,j}=\{(i,j-1),(i,j+1),(i-1,j),(i+1,j)\}\cap A$ 为位置
+$(i,j)$ 在图像域内的四邻域，
+$\Omega^{C}$ 为 $\Omega$ 在 $A$ 中的补集。$S_1$ 表示候选像素与干净邻居之间的
+正则化约束。由于 $(m,n)\in\Omega^C$，相邻像素保持观测值 $y_{m,n}$；$S_2$ 表示
+两个候选像素之间的正则化约束，由于 $(m,n)\in\Omega$，相邻像素同样是待求变量，
+因此采用 $u_{m,n}$。又因 $\varphi_\alpha$ 为偶函数，有
+$\varphi_\alpha(u-y)=\varphi_\alpha(y-u)$。在式~\eqref{eq:p2model} 的外层求和中，
+候选像素--干净像素边只从候选端出现一次，而候选像素--候选像素边会从两个端点
+各出现一次。
 
 为进一步看清结构，记 $\tilde u_p=u_p\ (p\in\Omega)$、$\tilde u_p=y_p\
-(p\notin\Omega)$。由 $\varphi_{\alpha}$ 的偶性，正则项可等价改写为边和形式——
-每条至少一端在 $\Omega$ 内的无向边恰计一次：
+(p\notin\Omega)$，并定义无向边集合
+$E_{\Omega}=\{\{p,q\}:q\in V_p,\ \{p,q\}\cap\Omega\neq\varnothing\}$，其中每条
+无向边只保留一次。由 $\varphi_{\alpha}$ 的偶性，正则项可等价改写为
 \begin{equation}
-  F_{\beta}(u)=\sum_{p\in\Omega}|u_p-y_p|+\beta\sum_{\text{边}\,(p,q):\,p\in\Omega}
-  \varphi_{\alpha}(u_p-\tilde u_q).
+  F_{\beta}(u)=\sum_{p\in\Omega}|u_p-y_p|+\beta\sum_{\{p,q\}\in E_{\Omega}}
+  \varphi_{\alpha}(\tilde u_p-\tilde u_q).
   \label{eq:edgesum}
 \end{equation}
 对式~\eqref{eq:edgesum} 求梯度，把自身项与来自邻居一侧的贡献合并，并利用
@@ -314,7 +347,7 @@ $\varphi_{\alpha}'$ 为奇函数，得
 
 式~\eqref{eq:grad} 中数据保真项的导数 $\mathrm{sign}(\cdot)$ 在原点不存在，
 目标函数非光滑，标准梯度类算法无法直接使用。处理非光滑优化常用两条路线：一是
-次梯度类方法，但收敛慢；二是光滑化 \cite{wu2021,chen2010}，即用一族光滑函数
+次梯度类方法，但收敛慢；二是光滑化\cite{wu2021,chen2010}，即用一族光滑函数
 一致逼近非光滑项后求解光滑问题。本文采用后者：选取 $C^1$ 函数 $\rho_{\mu}$
 逼近 $|t|$，要求存在与 $t$ 无关的误差界
 \begin{equation}
@@ -343,40 +376,41 @@ $\varphi_{\alpha}'$ 为奇函数，得
 \begin{equation}
   \min_{u\in[s_{\min},s_{\max}]^{|\Omega|}}\ F_{\mu}(u)
   =\sum_{p\in\Omega}\rho_{\mu}(u_p-y_p)
-  +\beta\sum_{\text{边}\,(p,q):\,p\in\Omega}\varphi_{\alpha}(u_p-\tilde u_q),
+  +\beta\sum_{\{p,q\}\in E_{\Omega}}\varphi_{\alpha}(\tilde u_p-\tilde u_q),
   \label{eq:smooth}
 \end{equation}
 其中光滑化误差满足 $|F_{\mu}(u)-F_{\beta}(u)|\le c_{\rho}\mu|\Omega|$，即
 $\mu\to0$ 时目标函数一致收敛到原问题；梯度表达式由式~\eqref{eq:grad} 把
 $\mathrm{sign}$ 换成 $\rho_{\mu}'$ 得到。
 
-关于光滑参数 $\mu$ 的选取需要权衡：$\mu$ 越小逼近精度越高，但 $\rho_{\mu}''$
-仅在 $|t|$ 与 $\mu$ 同阶的窄带内非退化，函数在大部分区域近似分段线性，理论上
-会使梯度类方法收敛变慢；$\mu$ 越大光滑越充分，但逼近误差不超过 $c_{\rho}\mu$
-个灰度级。消融实验（8.1 节）表明，在本文主配置下 $\mu$ 从 1 降到 $10^{-4}$，
-迭代数与恢复 PSNR 几乎不变，故 $\mu$ 的选取实际由逼近误差决定：取 $\mu=1$
-时误差不足一个灰度级，恢复质量与 $\mu\to0$ 一致。
+关于光滑参数 $\mu$ 的选取需要权衡：$\mu$ 越小逼近精度越高，但平方根型
+$\rho_{\mu}$ 在原点附近的最大曲率随 $1/\mu$ 增大，而远离原点时曲率迅速减小，
+可能使目标函数的条件数变差，从而增加线搜索与迭代的难度；$\mu$ 越大光滑越
+充分，但单个数据项的逼近误差上界为 $c_{\rho}\mu$。消融实验表明，
+在本文主配置与测试范围内，$\mu$ 从 1 降到 $10^{-4}$ 时迭代数与恢复 PSNR 几乎
+不变。因此主实验取 $\mu=1$，此时平方根型逼近的单项误差不超过一个灰度级；
+这里的“一致”是数值实验结论，不等同于对 $\mu\to0$ 极限的解析证明。
 
 \subsection{盒约束化与最优性条件}
 
-式~\eqref{eq:smooth} 中的盒约束 $[s_{\min},s_{\max}]$ 引入是无损的，依据是
-文献\cite{cai2007}的最大值原理：当 $\varphi_{\alpha}$ 为偶函数、连续且关于
+式~\eqref{eq:smooth} 中的盒约束 $[s_{\min},s_{\max}]$ 引入是无损的，依据最大值原理\cite{cai2007}：当 $\varphi_{\alpha}$ 为偶函数、连续且关于
 $|t|$ 严格递增时，目标泛函的任一全局极小点 $u^*$ 必满足
-$u_p^{*}\in[s_{\min},s_{\max}]$。其直观解释是：若某分量越出动态范围，把它拉回
-边界可同时减小每个 $\varphi_{\alpha}(u_p-\tilde u_q)$（因 $|u_p-\tilde u_q|$
-减小）而不增大数据项。同时 $\varphi_{\alpha}''\ge0$ 与 $\rho_{\mu}''\ge0$
+$u_p^{*}\in[s_{\min},s_{\max}]$。其直观解释是：把全部分量逐点截断到动态范围内，
+投影的非扩张性保证相邻像素差的绝对值不会增大，且数据项也不会增大。
+同时 $\varphi_{\alpha}''\ge0$ 与 $\rho_{\mu}''\ge0$
 保证 $F_{\mu}$ 为凸函数，故式~\eqref{eq:smooth} 是盒约束光滑凸规划，其最优性
-条件为投影间隙
+条件可写为投影残差
 \begin{equation}
   G(u)=\big\|P\big(u-\nabla F_{\mu}(u)\big)-u\big\|_{\infty}=0,
 \end{equation}
 其中 $P(\cdot)$ 为到 $[s_{\min},s_{\max}]$ 的逐像素欧氏投影。$G(u)=0$ 即
-KKT 条件的紧凑表达：在可行域内部梯度为零，在边界上梯度方向指向可行域内侧。
+一阶 KKT 条件的紧凑表达：在可行域内部梯度为零；在下边界梯度非负，在上边界
+梯度非正。
 $G(u)$ 同时充当算法的终止准则。
 
 \subsection{算法设计：GPSR-BB 投影梯度法}
 
-文献\cite{figueiredo2008}提出的 GPSR 方法原本用于稀疏重构：以变量分裂把
+GPSR 方法\cite{figueiredo2008}原本用于稀疏重构：以变量分裂把
 $\ell_1$ 问题化为有界约束二次规划后，用投影梯度法求解。本文的模型
 式~\eqref{eq:smooth} 本身已是盒约束光滑凸问题，可直接沿用其框架。投影梯度法
 是约束优化中梯度法的自然推广：每步先沿负梯度方向移动，再投影回可行域。本文
@@ -390,14 +424,28 @@ $\ell_1$ 问题化为有界约束二次规划后，用投影梯度法求解。�
 
 步长 $\alpha^{(k)}$ 取 Barzilai--Borwein（BB）步长：记
 $s^{(k)}=u^{(k+1)}-u^{(k)}$、$y^{(k)}=\nabla F(u^{(k+1)})-\nabla F(u^{(k)})$，
-则
+先定义候选步长
+\[
+  \widehat\alpha^{(k+1)}=
+  \begin{cases}
+    \dfrac{(s^{(k)})^{\!\top}s^{(k)}}{(s^{(k)})^{\!\top}y^{(k)}},
+      & (s^{(k)})^{\!\top}y^{(k)}>0,\\[6pt]
+    \alpha_{\max}, & (s^{(k)})^{\!\top}y^{(k)}\le0.
+  \end{cases}
+\]
+则截断后的 BB 步长写成分段形式
 \begin{equation}
-  \alpha^{(k+1)}=\mathrm{clip}\Big(\tfrac{(s^{(k)})^{\!\top}s^{(k)}}
-  {(s^{(k)})^{\!\top}y^{(k)}},\ \alpha_{\min},\ \alpha_{\max}\Big),
+  \alpha^{(k+1)}=
+  \begin{cases}
+    \alpha_{\min}, & \widehat\alpha^{(k+1)}<\alpha_{\min},\\[2pt]
+    \widehat\alpha^{(k+1)}, &
+      \alpha_{\min}\le\widehat\alpha^{(k+1)}\le\alpha_{\max},\\[2pt]
+    \alpha_{\max}, & \widehat\alpha^{(k+1)}>\alpha_{\max},
+  \end{cases}
   \label{eq:bb}
 \end{equation}
-其中 $\mathrm{clip}$ 表示截断到 $[\alpha_{\min},\alpha_{\max}]=[10^{-10},10^{6}]$，
-曲率信息失效（$s^{\!\top}y\le0$）时按文献惯例取 $\alpha_{\max}$。BB 步长的思想
+其中 $[\alpha_{\min},\alpha_{\max}]=[10^{-10},10^{6}]$；曲率信息失效
+（$(s^{(k)})^{\!\top}y^{(k)}\le0$）时直接取 $\alpha_{\max}$。BB 步长的思想
 是：把相邻两点的差分视为对 Hessian 的割线近似，$\alpha^{(k)}$ 恰为该近似下
 $H^{-1}$ 的尺度，从而以极小代价获得近似二阶方法的长步长——这对``不同区域曲率
 差异悬殊''的非光滑问题光滑化后尤其有效，是算法效率的关键。
@@ -406,12 +454,12 @@ $H^{-1}$ 的尺度，从而以极小代价获得近似二阶方法的长步长�
 $\lambda=1,\tau,\tau^{2},\dots$ 中第一个满足
 \begin{equation}
   F_{\mu}\big(u^{(k)}+\lambda d^{(k)}\big)\le
-  \max_{0\le j\le M}F_{\mu}\big(u^{(k-j)}\big)+\delta\lambda(g^{(k)})^{\!\top}d^{(k)}
+  \max_{0\le j\le \min\{M,k\}}F_{\mu}\big(u^{(k-j)}\big)+\delta\lambda(g^{(k)})^{\!\top}d^{(k)}
   \label{eq:armijo}
 \end{equation}
 者，其中 $d^{(k)}=w^{(k)}-u^{(k)}$，$\delta=10^{-4}$ 为下降系数，$\tau=0.5$
 为回溯因子，$M=10$ 为非单调记忆长度。允许目标值在 $M$ 步窗口内暂时上升，可
-显著改善 BB 步长波动时的接受率\cite{figueiredo2008}。算法流程见算法 1。
+显著改善 BB 步长波动时的接受率。算法流程见算法 1。
 
 \begin{algtable}{算法 1\quad 两阶段椒盐噪声恢复（GPSR-BB 投影梯度）}
 \textbf{输入：}噪声图像 $Y$、噪声等级 $r$、参数 $\alpha,\beta,\mu$、终止容差 tolP \\
@@ -419,7 +467,9 @@ $\lambda=1,\tau,\tau^{2},\dots$ 中第一个满足
 1: 第一阶段：按 $r$ 查表得 $w_{\max}$，执行 AMF 得候选集 $\Omega$ 与初值
 $u^{0}=\hat y|_{\Omega}$ \\
 2: 第二阶段：按式~\eqref{eq:smooth} 构造盒约束光滑模型 $F_{\mu}$，
-$g^{0}=\nabla F_{\mu}(u^{0})$，$\alpha^{(0)}=\mathrm{clip}(1/\|g^{0}\|_{\infty})$ \\
+$g^{0}=\nabla F_{\mu}(u^{0})$，
+$\alpha^{(0)}=\min\{\alpha_{\max},
+\max\{\alpha_{\min},1/\|g^{0}\|_{\infty}\}\}$ \\
 3: \textbf{for} $k=0,1,2,\dots$ \textbf{do} \\
 \hspace{1.5em} $w^{(k)}=P(u^{(k)}-\alpha^{(k)}g^{(k)})$；\ $d^{(k)}=w^{(k)}-u^{(k)}$ \\
 \hspace{1.5em} 求满足式~\eqref{eq:armijo} 的 $\lambda^{(k)}$；
@@ -438,20 +488,20 @@ $\varphi_{\alpha}=\sqrt{t^{2}+\alpha}$ 关于 $\alpha$ 存在较宽平台，本�
 图上对 $\beta$ 与 $\alpha$ 做网格扫描（种子 2026）。结果表明：PSNR 随 $\beta$
 增大后在 $\beta\ge40$ 时进入平台（$\beta=40$ 时 38.357 dB，提高到 640 仅再提高
 0.008 dB）；$\alpha$ 在 300 附近最优，过小则曲率过强、过大则正则过弱。因此主
-配置取 $\alpha=300,\ \beta=40$，并在多幅图像上验证其优于文献\cite{cai2007}
-常用配置 $\alpha=100$。
+配置取 $\alpha=300,\ \beta=40$。
 
 \subsection{评价指标}
 
 为评价恢复质量与算法效率，构建如下指标（均在未取整的浮点恢复图 $\hat x$ 上
 计算，其中 $\hat x|_{\Omega}=u^{*}$、$\hat x|_{\Omega^{C}}=y$）：
 \begin{equation}
-  \mathrm{PSNR}=10\log_{10}\frac{s_{\max}^{2}}{\mathrm{MSE}},
+  \mathrm{PSNR}=10\log_{10}\frac{(s_{\max}-s_{\min})^{2}}{\mathrm{MSE}},
   \qquad
   \mathrm{SNR}=10\log_{10}\frac{\sum_{i,j}x_{i,j}^{2}}
   {\sum_{i,j}(x_{i,j}-\hat x_{i,j})^{2}},
 \end{equation}
-其中 $\mathrm{MSE}=\frac{1}{MN}\sum_{i,j}(x_{i,j}-\hat x_{i,j})^{2}$ 为均方误差。
+其中 $\mathrm{MSE}=\frac{1}{MN}\sum_{i,j}(x_{i,j}-\hat x_{i,j})^{2}$ 为均方误差；
+对本文 8 位灰度图，$s_{\max}-s_{\min}=255$。
 PSNR 从峰值信号角度度量失真，SNR 从信号能量角度度量噪声水平。另记录平均绝对
 误差 $\mathrm{MAE}=\frac{1}{MN}\sum|x-\hat x|$、检测阶段的真噪声检出率
 $\mathrm{TPR}$（正确检出的真噪声像素占全部真噪声像素的比例）与误检率
@@ -460,17 +510,15 @@ $\mathrm{FPR}$（误判为噪声的干净像素占全部干净像素的比例）
 
 \subsection{求解结果与分析}
 
-实验平台为 Python 3.11（依赖版本见支撑材料），测试集为 12 张 $512\times512$
-灰度标准测试图，每个噪声等级 3 组随机种子（2026、7、42），共 72 个算例。主
-配置为 $\alpha=300,\ \beta=40,\ \mu=1$，求解器参数为 $\delta=10^{-4}$、
-$\tau=0.5$、tolP $=10^{-2}$、迭代上限 1500。全部 72 个算例在终止准则下收敛。
-均值汇总见表~\ref{tab:p1sum}，逐图结果见表~\ref{tab:p1perimg}，与基线的对比见
-表~\ref{tab:p1base}，恢复效果见图~\ref{fig:p1vis}。
+本文选取 12 张 $512\times512$ 灰度测试图，在 $30\%$ 和 $50\%$ 两种噪声等级下
+分别进行 3 次独立实验，共得到 72 组算例。模型参数取
+$\alpha=300,\ \beta=40,\ \mu=1$，求解器参数为 $\delta=10^{-4}$、$\tau=0.5$、
+tolP $=10^{-2}$、迭代上限 1500，全部算例均满足终止准则。实验结果见
+表~\ref{tab:p1sum}--表~\ref{tab:p1base}，Lena 图像的恢复效果见图~\ref{fig:p1vis}。
 
 \begin{table}[!htbp]
   \centering\small
-  \caption{问题一主实验结果均值汇总，方括号内为取值区间的最小值与最大值；
-  其中 PSNR 区间为逐图均值（每图 3 种子）口径，迭代数与时间区间为逐次运行口径}
+  \caption{问题一恢复结果汇总}
   \label{tab:p1sum}
   \begin{tabular}{lccccc}
     \toprule[1.5pt]
@@ -484,7 +532,7 @@ $\tau=0.5$、tolP $=10^{-2}$、迭代上限 1500。全部 72 个算例在终止�
 
 \begin{table}[!htbp]
   \centering\small
-  \caption{12 张测试图的逐图恢复结果，各为 3 组随机种子均值}
+  \caption{12 张测试图的恢复结果（3 组随机种子均值）}
   \label{tab:p1perimg}
   \begin{tabular}{lcccccc}
     \toprule[1.5pt]
@@ -508,7 +556,7 @@ $\tau=0.5$、tolP $=10^{-2}$、迭代上限 1500。全部 72 个算例在终止�
 
 \begin{table}[!htbp]
   \centering\small
-  \caption{两阶段方法与基线方法的对比，值为 12 图均值，单位 dB}
+  \caption{不同恢复方法的 PSNR 对比（12 图均值，单位 dB）}
   \label{tab:p1base}
   \begin{tabular}{lccccc}
     \toprule[1.5pt]
@@ -522,35 +570,19 @@ $\tau=0.5$、tolP $=10^{-2}$、迭代上限 1500。全部 72 个算例在终止�
 
 \begin{figure}[!htbp]
   \centering
-  \includegraphics[width=.92\textwidth]{vis_lena_gray_512_r30.png}
-  \caption{Lena 图 30\% 噪声下的原图、噪声图、自适应中值滤波输出与本文
-  GPSR-BB 恢复结果，下排为局部放大；单次运行（噪声种子 2026），PSNR 为
-  38.36 dB，迭代 85 次（表~\ref{tab:p1perimg} 中 Lena 行为 3 种子均值）}
+  \includegraphics[width=.92\textwidth]{figures/vis_lena_gray_512_r30.png}
+  \caption{Lena 图在 30\% 椒盐噪声下的恢复结果及局部放大}
   \label{fig:p1vis}
 \end{figure}
 
-对结果做逐项分析如下。
+由表~\ref{tab:p1sum} 可知，算法在 $30\%$ 和 $50\%$ 噪声下的平均 PSNR 分别为
+37.33 dB 和 33.76 dB，真噪声检出率均不低于 99.8\%，误检率不超过 0.7\%。其中，
+Lena 图像在 $30\%$ 噪声下的平均 PSNR 为 38.35 dB。由图~\ref{fig:p1vis} 可见，
+恢复图像中的脉冲噪声基本消除，图像边缘和局部纹理得到较好保留。
 
-第一，检测质量方面。采用文献\cite{chan2005}的两条件候选集定义后，真噪声检出率
-不低于 99.8\%（72 个算例最低 99.82\%），误检率从端点判决下的 2.7\%--9.4\% 降至
-0.0\%--0.7\%。误检在多数图像上仅零星出现（不足 $0.12\%$），只有 woman\_blonde
-这类原图含大量端点灰度的图像达到 0.6\%--0.7\%；且误检像素取值为端点、位于局部
-极值区，第二阶段的数据保真项将其误差收敛殆尽。候选集规模由约 $9\times10^{4}$
-收敛到与真实噪声数一致，恢复质量因此获得约 $0.5$--$1$ dB 的系统性提升。
-
-第二，恢复质量方面。本文方法在 12 张图上均取得良好效果，Lena 图 $30\%$ 噪声下
-PSNR 达 38.35 dB，显著优于文献\cite{liu2025}同任务报告值 36.99 dB；$30\%$ 与
-$50\%$ 噪声的平均 PSNR 差约 3.6 dB，符合噪声等级越高恢复越难的直观认识；恢复
-图像边缘与纹理清晰，局部放大图无明显锯齿与抹平现象，说明保边正则项起到了预期
-作用。
-
-第三，与基线的对比方面。中值滤波在 $30\%$ 噪声下只有 23.4--26.9 dB，且窗口越
-大细节损失越严重；AMF 直接输出达 32.5 dB，是``仅检测不恢复''的上限；本文方法
-在此基础上再提高 4.8--5.1 dB。该对比印证了文献\cite{chan2005}的关键论断：决策
-型中值滤波器虽能定位噪声，但直接替换会丢失局部特征，必须配合保边正则化恢复。
-
-第四，计算效率方面。平均迭代数约 87 与 92，平均求解时间为 2.94 s 与 5.42 s，
-求解时间随候选集规模近似线性增长，符合 $O(|\Omega|)$ 的复杂度分析。
+由表~\ref{tab:p1base} 可知，与固定窗口中值滤波相比，本文方法在两种噪声等级下均
+取得更高的 PSNR；在 AMF 直接输出的基础上，平均 PSNR 进一步提高约 4.8--5.1 dB。
+算法平均迭代约 87 次和 92 次，求解时间随候选像素数量增加而上升，与复杂度分析一致。
 
 此外，为检验建模中关键选择的必要性，在 Lena 与 Peppers 图上对求解器、光滑参数
 与数据保真项做对照实验，结果见表~\ref{tab:p1strategy}。可得三点结论：其一，
@@ -560,11 +592,11 @@ BB 步长是求解效率的关键——GPSR-Basic 需 7160 步 266 s，GPSR-BB �
 实验（存档见支撑材料）显示 $\mu$ 从 1 降到 $10^{-4}$ 时迭代数均为 85 步、恢复
 PSNR 差不超过 $0.0001$ dB，$\mu=1$ 是精度与工程便利的双赢选择。其三，数据保真
 项在 $\beta$ 足够大时可以删除——无数据项版本 PSNR 为 38.366 dB，比含数据项高
-0.009 dB，验证了文献\cite{chan2005}``第二阶段数据项可删''的论断。
+0.009 dB，验证了``第二阶段数据项可删''的论断。
 
 \begin{table}[!htbp]
   \centering\small
-  \caption{问题一策略对比，Lena 图 30\% 噪声，种子 2026}
+  \caption{问题一求解策略对比（Lena 图，$r=30\%$）}
   \label{tab:p1strategy}
   \begin{tabular}{lccc}
     \toprule[1.5pt]
@@ -583,8 +615,9 @@ PSNR 差不超过 $0.0001$ dB，$\mu=1$ 是精度与工程便利的双赢选择�
 
 \subsection{五种保边势函数及其数学性质}
 
-问题二沿用问题一的两阶段框架，仅替换正则项中的保边势函数。五种候选
-\cite{cai2007}为
+问题二沿用问题一的两阶段框架，保持噪声检测、数据保真项、邻域结构和求解算法不变，
+仅替换正则项中的保边势函数。对第 $k$ 种势函数，将模型中的 $\varphi_\alpha$ 替换为
+$\varphi_\alpha^{(k)}$，其余条件保持一致。五种候选势函数为\cite{cai2007}
 \begin{align}
   \varphi_{\alpha}^{(1)}(t)&=\sqrt{t^{2}+\alpha},\quad \alpha>0, &
   \varphi_{\alpha}^{(2)}(t)&=|t|^{\alpha},\quad 1<\alpha\le2, \nonumber\\
@@ -594,23 +627,12 @@ PSNR 差不超过 $0.0001$ dB，$\mu=1$ 是精度与工程便利的双赢选择�
   \varphi_{\alpha}^{(5)}(t)&=\begin{cases}\dfrac{t^{2}}{2\alpha}, & |t|\le\alpha,\\[2pt]
   |t|-\dfrac{\alpha}{2}, & |t|>\alpha.\end{cases} & \nonumber
 \end{align}
-需要说明的是，题目中第 3 式印刷为 $\log(\cosh(\alpha))$，应为
-$\log(\cosh(\alpha t))$，本文按文献\cite{cai2007}原式实现。
 
-五种势函数虽同属``偶、凸、关于 $|t|$ 严格递增''的保边族，但参数语义与解析性质
-各不相同，这决定其恢复表现与数值行为。\textbf{平方根型}的参数 $\alpha$ 是曲率
-尺度：$\varphi''(0)=1/\sqrt{\alpha}$，$\alpha$ 越大原点越平坦；它处处光滑，导数
-满足 $|\varphi'|\le1$。\textbf{幂函数型}的参数是指数：$1<\alpha<2$ 时仅 $C^1$，
-一阶导 $\varphi'(t)=\alpha\,\mathrm{sign}(t)|t|^{\alpha-1}$ 在原点为零而二阶导
-趋于无穷，即原点附近刚性趋于无穷；且导数随 $|t|$ 增大而无界，惩罚介于
-$\ell_1$ 与 $\ell_2$ 之间。\textbf{对数余弦型}的参数是指数速率：
-$\varphi''(0)=\alpha^{2}$，导数 $|\varphi'|=\alpha|\tanh(\alpha t)|\le\alpha$；
-$\alpha$ 偏大时导数在原点附近陡增、远离原点后趋于饱和，正则强度随参数变化
-剧烈。\textbf{对数型}的参数是阈值尺度：导数
-$\varphi'=\mathrm{sign}(t)\big(1/\alpha-1/(\alpha+|t|)\big)$ 被 $1/\alpha$ 压平，
-该线性比例可被正则权重 $\beta$ 吸收。\textbf{Huber 型}是二次与线性的分段拼接，
-参数 $\alpha$ 为二次区半径，导数在 $|t|=\alpha$ 处折弯，$|\varphi'|\le1$。五种
-势函数的形状与导数见图~\ref{fig:p2shape}，解析性质汇总见表~\ref{tab:p2smooth}。
+五种势函数均为偶凸函数，并随 $|t|$ 单调增加，其中 $t$ 表示相邻像素的灰度差。
+当 $|t|$ 较小时，势函数通过惩罚局部波动抑制噪声；当 $|t|$ 较大时，惩罚增长速度
+降低，从而减少对真实边缘的平滑。不同势函数的主要差异体现在原点附近的曲率、远离
+原点后的增长速度以及导数是否有界，具体性质见表~\ref{tab:p2smooth}，函数形状见
+图~\ref{fig:p2shape}。
 
 \begin{table}[!htbp]
   \centering\small
@@ -621,7 +643,7 @@ $\varphi'=\mathrm{sign}(t)\big(1/\alpha-1/(\alpha+|t|)\big)$ 被 $1/\alpha$ 压�
     势函数 & 光滑类 & 导数界 $|\varphi'|\le$ & 原点二阶导 & 光滑化方式 \\
     \midrule[1pt]
     平方根型 & $C^{\infty}$ & 1 & $1/\sqrt{\alpha}$ & 直接使用 \\
-    幂函数型 & $C^{1}$ & 无界 & 奇异 & $(t^{2}+\mu^{2})^{\alpha/2}$ \\
+    幂函数型 & $C^{1}$ & 无界 & 奇异 & $(t^{2}+\mu^{2})^{\alpha/2}-\mu^\alpha$ \\
     对数余弦型 & $C^{\infty}$ & $\alpha$ & $\alpha^{2}$ & 直接使用 \\
     对数型 & $C^{2}$ & $1/\alpha$ & $1/\alpha^{2}$ & 直接使用 \\
     Huber 型 & $C^{1}$ & 1 & $1/\alpha$ & 直接使用 \\
@@ -631,85 +653,72 @@ $\varphi'=\mathrm{sign}(t)\big(1/\alpha-1/(\alpha+|t|)\big)$ 被 $1/\alpha$ 压�
 
 \begin{figure}[!htbp]
   \centering
-  \includegraphics[width=.9\textwidth]{potential_shapes.png}
-  \caption{五种保边势函数的形状与导数，参数取 30\% 噪声下的标定值，虚线为参考界}
+  \includegraphics[width=.9\textwidth]{figures/potential_shapes.png}
+  \caption{五种保边势函数及其导数曲线}
   \label{fig:p2shape}
 \end{figure}
 
-导数有界性是理解后续实验的钥匙：目标函数沿任一方向的曲率上界由 $\beta$ 与
-$\varphi''$ 共同控制，而 $\varphi''$ 的量级受 $|\varphi'|$ 的尺度约束。导数尺度
-越大、在不同区间起伏越剧烈，目标函数的条件数越差，梯度类算法每步获得的进展越
-小——这预言了对数余弦型（导数界 $\alpha$）与对数型（原点二阶导 $1/\alpha^2$
-随标定值急剧变化）的收敛速度慢于平方根型与 Huber 型。
+表~\ref{tab:p2smooth} 中的光滑性和导数界直接影响目标函数的曲率，进而影响梯度算法
+的稳定性与收敛速度。因此，势函数的比较既要考察恢复质量，也要记录迭代次数。
 
 \subsection{幂函数型的光滑化处理}
 
-问题一主实验的光滑函数族仅作用于 $\ell_1$ 数据项；当势函数本身光滑时模型可直接
-求值。幂函数型在 $1<\alpha<2$ 时二阶导在原点奇异，使梯度的 Lipschitz 性与 BB
-曲率估计变差。本文采用受文献\cite{wu2021} $p$ 范数光滑思想启发的近似，把
-$\varphi_{\alpha}^{(2)}$ 替换为 $C^{\infty}$ 的
+当 $1<\alpha<2$ 时，幂函数 $|t|^\alpha$ 在 $t=0$ 附近的二阶导数无界，可能导致
+梯度变化过快，降低迭代算法的稳定性。为此，本文采用光滑化处理，
+将 $\varphi_{\alpha}^{(2)}$ 近似为
 \begin{equation}
-  \varphi_{\alpha,\mu}^{(2)}(t)=\big(t^{2}+\mu^{2}\big)^{\alpha/2},
+  \varphi_{\alpha,\mu}^{(2)}(t)=\big(t^{2}+\mu^{2}\big)^{\alpha/2}-\mu^{\alpha},
 \end{equation}
-该函数在 $|t|\gg\mu$ 时与原势函数一致，在原点附近以 $\mu^{2}$ 的曲率尺度平滑
-过渡，与文献\cite{wu2021}光滑模型对 $l_p$ 正则项的处理同源，但并非照搬其
-具体公式。
+当 $|t|\gg\mu$ 时，该函数与原幂函数近似一致；在 $t=0$ 附近则保持光滑，从而便于
+使用梯度算法求解。减去与 $t$ 无关的常数 $\mu^\alpha$ 可保持
+$\varphi_{\alpha,\mu}^{(2)}(0)=0$；该常数不改变梯度与极小点，但使不同 $\mu$ 下的
+函数值具有一致基准。
 
 \subsection{公平比较协议}
 
-为保证结论可信，本文对每种势函数独立标定参数。标定过程为：先固定正则权重
-$\beta=40$ 扫描参数 $\alpha$，取 PSNR 最高者记为 $\alpha^{*}$；再在 $\alpha^{*}$
-下扫描 $\beta\in\{5,20,40,80,160,320,640\}$，取 PSNR 最高者记为 $\beta^{*}$。
-这里把 $\beta$ 扫描上界取到 640，是因为对数型与对数余弦型势函数的最优权重在原
-上界 160 处仍在上升，不扩展网格会因截断而选错最优值。选优规则为优先选择收敛解
-中的 PSNR 最高者；当某势函数在所有 $\beta$ 下均未收敛时，取 PSNR 最高者并明确
-标注为截断最优。幂函数型的参数 $\alpha^{*}$ 限定在 $1<\alpha<2$，$\alpha=2$
-退化为二次惩罚、不属于保边族，仅作敏感性曲线的参考点。
+五种势函数中参数 $\alpha$ 的含义不同，若直接使用同一组参数，结果可能主要反映
+参数尺度差异，而不能公平反映势函数本身的性能。因此，本文分别标定各势函数的参数：
+先固定 $\beta=40$ 搜索 $\alpha$，取该网格内 PSNR 最大的参数记为 $\hat\alpha$；
+再固定 $\alpha=\hat\alpha$，搜索 $\beta\in\{5,20,40,80,160,320,640\}$，在满足停止
+准则的结果中取该网格内 PSNR 最大者记为 $\hat\beta$。先确定势函数形状，再确定正则项权重，可以减少
+参数组合数量，并使各函数在各自较合适的尺度下比较。该过程是一次坐标式标定，
+不能保证得到 $\alpha$ 与 $\beta$ 的联合全局最优值；因此本文结论限定在给定网格与
+标定协议内。
 
-标定只在 Lena 图某一随机种子（2026）上进行，主实验在 Lena、Cameraman、Peppers
-三图、两个噪声等级、各两组种子（2026、7）上验证，并同时输出剔除 Lena 后的样本
-外汇总以排除过拟合。需要说明的是，10 组 $(\alpha^{*},\beta^{*})$ 中有 9 组
-$\beta^{*}$ 取到网格上界 640，故 $\beta^{*}$ 应理解为``网格内最优的平台代表
-值''；后文 8.2 节的 $\beta=1280$ 延伸验证表明该表述不改变本文结论。
+参数标定使用 Lena 图像及随机种子 2026；参数迁移验证使用其余图像与随机种子，
+并在汇总时同时列入 Lena 的标定实例。正式汇总覆盖 Lena、Cameraman 和 Peppers
+三幅图像、两个噪声等级及两组随机种子（2026、7）。因此该实验包含样本外的参数
+迁移检验，但汇总均值不是完全独立的样本外测试。各方法采用相同的噪声图、停止
+准则和最大迭代次数，并使用 PSNR、SSIM 和边缘 PSNR 评价恢复质量，使用迭代次数
+评价求解效率。
 
 \subsection{参数敏感性分析}
 
-各势函数的 PSNR 随参数 $\alpha$ 的变化曲线见图~\ref{fig:p2alpha}，图中可见三种
-典型行为。
+各势函数的 PSNR 随参数 $\alpha$ 的变化曲线见图~\ref{fig:p2alpha}。
 
 \begin{figure}[!htbp]
   \centering
-  \includegraphics[width=\textwidth]{psnr_vs_alpha.png}
-  \caption{Lena 图两种噪声等级下五种势函数的 PSNR 随 $\alpha$ 变化的曲线，
-  固定 $\beta=40$，横轴为对数尺度}
+  \includegraphics[width=\textwidth]{figures/psnr_vs_alpha.png}
+  \caption{五种势函数的参数 $\alpha$ 敏感性}
   \label{fig:p2alpha}
 \end{figure}
 
-第一种是宽平台型。平方根型和 Huber 型对 $\alpha$ 不敏感，在跨越两个数量级的
-区间内 PSNR 保持高位：平方根型在 $\alpha\in[10,3000]$ 内 PSNR 均在 37.2 dB
-以上，且 $\alpha$ 越大迭代越少，参数选取两侧均安全。
-
-第二种是悬崖型。对数余弦型与对数型在参数偏小时惩罚过强，在参数偏大时导数趋于
-零、正则失效，解退化为直接拟合污染观测值，PSNR 从 37 dB 跌至约 11 dB，接近
-噪声图水平。这类势函数只有参数落在较窄区间内才有效，需要精确调参。
-
-第三种是恢复正常型。幂函数型未光滑化时因原点二阶导奇异而数值不稳定，经
-$(t^{2}+\mu^{2})^{\alpha/2}$ 光滑化后转变为正常平台型：$\alpha\in[1.05,1.6]$
-内 PSNR 变化约 0.13 dB，且全部运行均达到收敛准则，验证了光滑化对 $l_p$ 型
-势函数数值可解性的关键作用。
+由图~\ref{fig:p2alpha} 可知，平方根型和 Huber 型在较宽参数区间内保持稳定；对数
+余弦型和对数型对参数较为敏感，参数偏离有效区间时 PSNR 明显下降；幂函数经过
+光滑化后，其恢复结果随参数变化趋于稳定。因此，参数稳定性也是选择势函数时需要
+考虑的因素。
 
 \subsection{对比实验结果与结论}
 
-按标定协议得到各势函数最优参数后做正式对比，结果见表~\ref{tab:p2main}。
+按标定协议得到各势函数的网格内选定参数后做正式对比，结果见表~\ref{tab:p2main}。
 
 \begin{table}[!htbp]
   \centering\small
-  \caption{问题二主实验结果均值，各势函数使用按噪声等级标定的最优参数，
-  $r$ 表示噪声等级，$\alpha^{*}$ 与 $\beta^{*}$ 为标定值}
+  \caption{五种势函数的恢复结果比较}
   \label{tab:p2main}
   \begin{tabular}{llcccccc}
     \toprule[1.5pt]
-    $r$ & 势函数 & $\alpha^{*}$ & $\beta^{*}$ & PSNR dB & SSIM & 边缘 PSNR & 迭代数 \\
+    $r$ & 势函数 & $\hat\alpha$ & $\hat\beta$ & PSNR dB & SSIM & 边缘 PSNR & 迭代数 \\
     \midrule[1pt]
     30\% & 平方根型 & 300 & 640 & 38.43 & 0.969 & 34.59 & 116 \\
     30\% & 幂函数型 & 1.4 & 640 & 38.39 & 0.969 & 34.56 & 137 \\
@@ -726,41 +735,32 @@ $(t^{2}+\mu^{2})^{\alpha/2}$ 光滑化后转变为正常平台型：$\alpha\in[1
   \end{tabular}
 \end{table}
 
-由表可得三项结论。
-
-第一，恢复质量对势函数形式不敏感。两个噪声等级下五种势函数的 PSNR 极差分别为
-0.19 dB 与 0.13 dB，SSIM 几乎相同，边缘 PSNR 差距不超过 0.25 dB。这说明只要
-参数使势函数在典型邻域差值范围内近似 $|t|$（施加近线性惩罚），保边效果就是
-充分的，势函数的具体形式不构成瓶颈。
-
-第二，参数鲁棒性差异显著。平台型势函数可安全使用，悬崖型势函数需要精确调参，
-一旦失稳则结果骤降，因此稳健的选择比理论上的最优形式更重要，敏感性分析应作为
-势函数选择的必要环节。正则权重方面的对照见图~\ref{fig:p2beta}：$\beta\ge40$
-后各势函数进入平台区，权重选择相对宽松；对数余弦型与对数型在 $\beta=5$ 时明显
-低于各自平台水平——这正是固定文献权重的实验设置会使它们被低估的原因。
+由表~\ref{tab:p2main} 可知，五种势函数在相同噪声等级下的恢复质量接近。$30\%$ 和
+$50\%$ 噪声下的 PSNR 极差分别为 0.19 dB 和 0.13 dB，SSIM 及边缘 PSNR 差异较小，
+说明在参数适当时，五种势函数均能实现较好的保边恢复。正则权重的敏感性见
+图~\ref{fig:p2beta}；多数曲线在 $\beta$ 增大后进入平台或增益逐步收窄，但不同
+势函数进入平台的区间并不相同，不能把 $\beta\ge40$ 视为对所有势函数都成立的
+统一阈值。
 
 \begin{figure}[!htbp]
   \centering
-  \includegraphics[width=.9\textwidth]{beta_sensitivity.png}
-  \caption{五种势函数的 PSNR 随正则权重 $\beta$ 的变化，Lena 图两种噪声等级，
-  纵轴为各势函数标定参数，横轴为对数尺度}
+  \includegraphics[width=.9\textwidth]{figures/beta_sensitivity.png}
+  \caption{五种势函数的正则权重 $\beta$ 敏感性}
   \label{fig:p2beta}
 \end{figure}
 
-第三，数值性能差异显著。平方根型与幂函数型在 50 到 140 步内收敛，对数型与对数
-余弦型需约 600 步，Huber 型在 $50\%$ 噪声下需 740 步，收敛速度最优者与最差者
-相差 6 到 14 倍。该差异与表~\ref{tab:p2smooth} 的导数有界性分析吻合：导数尺度
-越大、起伏越剧烈，目标函数条件数越差。综合恢复质量、鲁棒性与收敛性，本文建议
-优先选用平方根型或幂函数型势函数。样本外汇总与全样本趋势一致，上述结论不是
-标定图上的偶然结果。
+不同势函数的求解效率差异明显：平方根型和幂函数型约需 50--140 次迭代，对数型、
+对数余弦型和 Huber 型约需 500--760 次迭代。综合恢复质量、参数稳定性和求解效率，
+本文优先推荐平方根型或经过光滑化处理的幂函数型势函数。
 
 \section{问题三模型的建立与求解}
 
 \subsection{稀疏重构模型与实验实例}
 
-稀疏信号重构是压缩感知的核心问题：信号 $x\in\mathbb{R}^{n}$ 仅含 $k\ll n$ 个
-非零元，通过线性观测 $b=Ax+e$ 恢复 $x$，其中 $A\in\mathbb{R}^{k\times n}$
-为测量矩阵，$e$ 为观测噪声。由于方程数少于未知数，欠定系统 $b=Ax$ 有无穷多组
+稀疏信号重构是压缩感知的核心问题：信号 $x\in\mathbb{R}^{n}$ 仅含 $s\ll n$ 个
+非零元，通过 $m<n$ 个线性观测 $b=Ax+e$ 恢复 $x$，其中
+$A\in\mathbb{R}^{m\times n}$ 为测量矩阵，$e$ 为观测噪声。由于方程数少于未知数，
+欠定系统 $b=Ax$ 有无穷多组
 解；稀疏性是挑选真解的关键先验。直接以``非零元个数最少''为目标即 $\ell_0$
 最小化，但该问题是 NP 难的；当 $A$ 满足适当的几何条件（如约束等距性）时，
 其凸松弛——$\ell_1$ 正则化最小二乘
@@ -768,13 +768,14 @@ $(t^{2}+\mu^{2})^{\alpha/2}$ 光滑化后转变为正常平台型：$\alpha\in[1
   \min_{x}\ \tau\|x\|_{1}+\tfrac12\|Ax-b\|_2^{2}
   \label{eq:l1}
 \end{equation}
-——与 $\ell_0$ 问题在很强条件下同解，是压缩感知的标准模型\cite{figueiredo2008}，
+——是常用的可计算凸替代；当测量矩阵满足适当条件时，它可实现精确或稳定的稀疏
+恢复，
 其中 $\tau>0$ 为平衡数据拟合与稀疏性的正则参数。
 
-实验实例与文献\cite{figueiredo2008}数值实验完全一致：$n=4096$，$k=1024$，
-稀疏信号含 160 个随机位置、取值 $\pm1$ 的非零元；$A$ 为行正交化的标准高斯
+实验实例设置为\cite{figueiredo2008}：$n=4096$，$m=1024$，
+稀疏度 $s=160$，非零元位置随机且取值为 $\pm1$；$A$ 为行正交化的标准高斯
 矩阵；观测 $b=Ax+e$，噪声方差 $\sigma^{2}=10^{-4}$；正则参数取
-$\tau=0.1\|A^{\top}b\|_{\infty}$\cite{figueiredo2008}。共生成 10 组独立实例
+$\tau=0.1\|A^{\top}b\|_{\infty}$。共生成 10 组独立实例
 （种子 0--9）。
 
 \subsection{光滑化与修正 PRP 共轭梯度法}
@@ -785,7 +786,7 @@ $\tau=0.1\|A^{\top}b\|_{\infty}$\cite{figueiredo2008}。共生成 10 组独立�
 存储若干与变量同维的向量，内存开销 $O(n)$。对二次目标函数，共轭梯度法构造的
 搜索方向两两关于 Hessian 共轭，理论上不超过 $n$ 步即得精确解。对一般非线性
 目标，Polak--Ribière--Polyak（PRP）等共轭参数把这一思想推广为非线性共轭梯度
-法\cite{liu2025,gu2024}：
+法：
 \begin{equation}
   x_{k+1}=x_k+\alpha_kd_k,\qquad
   d_k=
@@ -805,7 +806,7 @@ $\tau=0.1\|A^{\top}b\|_{\infty}$\cite{figueiredo2008}。共生成 10 组独立�
 \end{equation}
 其中 $y_{k-1}=g_k-g_{k-1}$ 为相邻梯度差。PRP 参数在精确线搜索下具有``自动
 重启''的优良数值性质（某步线搜索充分精确时方向退化为负梯度，相当于重新出发），
-但一般线搜索下其全局收敛性无法保证。修正 PRP（PRP+）\cite{liu2025,narushima2011}
+但一般线搜索下其全局收敛性无法保证。修正 PRP（PRP+）
 以非负截断修正共轭参数：
 \begin{equation}
   \beta_k^{\mathrm{PRP}+}=\max\Big\{0,\ \frac{g_k^{\top}y_{k-1}}{\|g_{k-1}\|^{2}}\Big\}.
@@ -813,20 +814,20 @@ $\tau=0.1\|A^{\top}b\|_{\infty}$\cite{figueiredo2008}。共生成 10 组独立�
 \end{equation}
 截断保证共轭参数恒非负，配合实现中的充分下降性检查与负梯度重启，可避免方向
 退化时产生短步甚至停滞，既保留 PRP 数值性能好的特点，又改善异常方向下的稳健性。
-其全局收敛性有经典结论保证：在水平集有界、梯度 Lipschitz 连续、线搜索满足强
+相应的全局收敛性需要额外条件：在水平集有界、梯度 Lipschitz 连续、线搜索满足强
 Wolfe 条件，且 $\beta_k\ge0$ 并满足 Gilbert--Nocedal 性质 $(*)$ 时，
-$\liminf_k\|g_k\|=0$\cite{gilbert1992}；文献\cite{narushima2011}进一步在含投影
-修正项的三项共轭梯度框架下给出充分下降与收敛推论，本文实现为两项 PRP+ 加
-下降性重启，与该框架同源而更简洁。
+$\liminf_k\|g_k\|=0$。本文实现的是两项 PRP+ 加下降性重启，相关收敛结论只用于
+说明算法成立所需的条件，并不构成对全部工程分支的直接证明。
 
 线搜索采用强 Wolfe 条件：$\alpha_k$ 需同时满足
 \begin{equation}
   F_{\mu}(x_k+\alpha_kd_k)\le F_{\mu}(x_k)+c_1\alpha_k g_k^{\top}d_k,
   \qquad
-  \big|g(x_k+\alpha_kd_k)^{\top}d_k\big|\le c_2\,\big|g_k^{\top}d_k\big|,
+  \big|\nabla F_{\mu}(x_k+\alpha_kd_k)^{\top}d_k\big|\le
+  c_2\,\big|g_k^{\top}d_k\big|,
 \end{equation}
-其中 $c_1=10^{-4}$、$c_2=0.1$。第一式保证函数值充分下降，第二式要求新点处
-方向导数足够小（步长既不过长也不过短），二者共同保证收敛证明所需的条件。
+其中 $c_1=10^{-4}$、$c_2=0.1$。第一式给出充分下降条件，第二式限制新点处方向
+导数的绝对值；二者共同排除过短的无效步长和破坏充分下降的过长步长。
 实现中另加充分下降保障：若某步方向的下降性不足（$g_k^{\top}d_k\ge
 -10^{-7}\|g_k\|^2$）则重置为负梯度方向；强 Wolfe 搜索失败时以负梯度重启与
 Armijo 回溯作工程兜底，兜底次数进入诊断计数。需要说明的是，上述收敛结论只
@@ -837,10 +838,9 @@ Armijo 回溯作工程兜底，兜底次数进入诊断计数。需要说明的�
 对模型~\eqref{eq:l1} 的光滑化形式
 $F_{\mu}(x)=\tau\sum_i\rho_{\mu}(x_i)+\frac12\|Ax-b\|_2^{2}$，其梯度为
 $\tau\rho_{\mu}'(x)+A^{\top}(Ax-b)$。为控制光滑化偏差，$\mu$ 按
-$10^{-1},10^{-2},\dots,10^{-6}$ 逐级续延，每段以上一段的解热启动；初值取文献
-常用的 $x_0=A^{\top}b$\cite{wu2021}。每段以相邻两步目标相对变化不超过 $10^{-6}$
-为主要停止准则（该准则在极小 $\mu$ 段比梯度范数准则更稳健，也与文献
-\cite{wu2021,yang2024}对信号重构问题采用光滑化共轭梯度法的实现策略一致），
+$10^{-1},10^{-2},\dots,10^{-6}$ 逐级续延，每段以上一段的解热启动；初值取
+$x_0=A^{\top}b$\cite{wu2021}。每段以相邻两步目标相对变化不超过 $10^{-6}$
+为主要停止准则，该准则在极小 $\mu$ 段比梯度范数准则更稳健；
 同时保留梯度无穷范数不超过 $10^{-6}$ 的提前停止，每段迭代上限 2000。流程见
 算法 2。
 
@@ -854,7 +854,9 @@ $(10^{-1},\dots,10^{-6})$、相对变化容差 rel\_tol \\
 \hspace{1.5em} \textbf{repeat} \\
 \hspace{3em} 强 Wolfe 线搜索求 $\alpha$；$x_{\mathrm{new}}\leftarrow x+\alpha d$；
 $g_{\mathrm{new}}\leftarrow\nabla F_{\mu}(x_{\mathrm{new}})$ \\
-\hspace{3em} \textbf{if} 目标相对变化 $\le$ rel\_tol \textbf{then} 结束本段 \\
+\hspace{3em} 计算目标相对变化 \\
+\hspace{3em} \textbf{if} 目标相对变化 $\le$ rel\_tol \textbf{then}
+$x\leftarrow x_{\mathrm{new}}$；$g\leftarrow g_{\mathrm{new}}$；结束本段 \\
 \hspace{3em} 按式~\eqref{eq:prpp} 计算 $\beta$；$d\leftarrow-g_{\mathrm{new}}+\beta d$ \\
 \hspace{3em} \textbf{if} 下降性不足 \textbf{then} $d\leftarrow-g_{\mathrm{new}}$ \\
 \hspace{3em} $x\leftarrow x_{\mathrm{new}}$；$g\leftarrow g_{\mathrm{new}}$ \\
@@ -864,7 +866,7 @@ $g_{\mathrm{new}}\leftarrow\nabla F_{\mu}(x_{\mathrm{new}})$ \\
 
 \subsection{GPSR-BCQP 对比算法}
 
-文献\cite{figueiredo2008}的 GPSR 方法原理是变量分裂：把 $x$ 的正部与负部分开，
+GPSR 方法\cite{figueiredo2008}采用变量分裂：把 $x$ 的正部与负部分开，
 令 $x=u-v$、$u,v\ge0$，合并为 $z=[u;v]\ge0$，则 $\|x\|_1=\mathbf{1}^{\top}z$，
 模型~\eqref{eq:l1} 化为有界约束二次规划（BCQP）
 \begin{equation}
@@ -876,8 +878,8 @@ $g_{\mathrm{new}}\leftarrow\nabla F_{\mu}(x_{\mathrm{new}})$ \\
 $w=(z-\alpha\nabla F)_+$、$z\leftarrow z+\lambda(w-z)$ 的弧搜索步长有闭式解
 $\lambda=\mathrm{mid}\big(0,\,-g^{\top}s/(s^{\top}Bs),\,1\big)$（二次函数沿弧可
 精确最小化），步长 $\alpha$ 取 BB secant 更新，终止准则取
-$\|\min(z,\nabla F(z))\|\le10^{-3}$（文献\cite{figueiredo2008}式 (17)）。本文
-实现其 GPSR-BB 工程版本，并按文献实现去偏置过程：固定解的支撑集后做最小二乘
+$\|\min(z,\nabla F(z))\|_2\le10^{-3}$。本文实现 GPSR-BB 工程版本，并采用
+去偏置过程\cite{figueiredo2008}：固定解的支撑集后做最小二乘
 精化，即仅对 $|\hat x_i|$ 显著非零的分量用 $\min\|A_Sx_S-b\|_2$ 重解，以消除
 $\ell_1$ 正则对幅度的系统性收缩。
 
@@ -912,19 +914,19 @@ PRP 两种配置、以及 GPSR-BB 与去偏置版本。结果均值见表~\ref{t
 
 \begin{figure}[!htbp]
   \centering
-  \includegraphics[width=\textwidth]{convergence_signal.png}
+  \includegraphics[width=\textwidth]{figures/convergence_signal.png}
   \caption{单实例的目标函数收敛对比与信号恢复对比，左图纵轴为对数尺度}
   \label{fig:p3vis}
 \end{figure}
 
 第一，支撑恢复能力。全部方法都恢复出全部 160 个真尖峰；未去偏置时相对误差约
-0.24，这是 $\ell_1$ 正则对幅度的系统收缩所致，与文献观察一致；去偏置后误差
+0.24，这是 $\ell_1$ 正则对幅度的系统收缩所致；去偏置后误差
 下降约一个数量级：修正 PRP 续延加去偏置与 GPSR-BB 加去偏置的相对误差分别为
 0.0286 与 0.0265，支撑误报数 3.9 对 2.8，恢复质量基本持平。这得益于续延把
 光滑化偏差从 $\mu=10^{-3}$ 时的 0.50\% 压到 $\mu=10^{-6}$ 时约 0.01\%。
 
 第二，收敛速度。GPSR-BB 以 29 步、0.14 s 收敛，修正 PRP 续延需 180 步、
-2.77 s。按文献``达到相同目标值''口径，GPSR-BB 需 29.1 步 0.14 s，修正 PRP 需
+2.77 s。按``达到相同目标值''口径，GPSR-BB 需 29.1 步 0.14 s，修正 PRP 需
 122.7 步 1.64 s，为前者的 4.2 倍。初值与停止准则对共轭梯度法的影响显著：取
 零初值并把梯度范数准则用于各段时，同目标值口径需 257.3 步；初值改为
 $A^{\top}b$ 并按相对变化准则分段停止后降为 122.7 步，说明初值选择捕获了观测
@@ -935,8 +937,8 @@ $A^{\top}b$ 并按相对变化准则分段停止后降为 122.7 步，说明初�
 第三，共轭参数的选择。FR 与 DY 参数需约 1080 步，是修正 PRP 与 HS 参数迭代数
 的 6 倍以上，验证了修正 PRP 与 HS 在本组实例上的数值优势。原始 PRP 与修正 PRP
 使用相同初值、停止条件、线搜索和下降性保障，仅截断规则不同；两者结果一致，且
-诊断记录中负 $\beta$ 和截断次数均为零，说明截断在本组实例上未被触发。截断的
-稳健性与收敛意义来自文献结论，当前实验不单独证明其数值增益。
+诊断记录中负 $\beta$ 和截断次数均为零，说明截断在本组实例上未被触发，
+当前实验不能单独证明其数值增益。
 
 \section{灵敏度分析与模型检验}
 
@@ -952,53 +954,20 @@ $\mu$ 均不敏感，$\mu=1$ 的选择由逼近误差决定。问题三的灵敏
 
 \subsection{正则权重与势函数参数的灵敏度}
 
-问题一的 $\beta$ 网格扫描显示 $\beta\ge40$ 后进入平台，与文献
-\cite{chan2005,cai2007}关于参数足够大时极小值不变的结论相符。问题二中 $\beta$
-扫描上界扩展后，对数型与对数余弦型的最优权重从 160 移至 640，PSNR 分别提升
+问题一的 $\beta$ 网格扫描显示 $\beta\ge40$ 后进入平台。问题二中 $\beta$
+扫描上界扩展后，对数型与对数余弦型的选定权重从 160 移至 640，PSNR 分别提升
 0.03 dB 与 0.12 dB，说明网格截断会系统性地低估这类势函数的性能。为检验
-$\beta^{*}$ 落在网格上界 640 是否造成低估，本文在各势函数标定 $\alpha^{*}$ 处
+$\hat\beta$ 落在网格上界 640 是否造成低估，本文在各势函数标定 $\hat\alpha$ 处
 补充 $\beta=1280$ 的延伸验证：平方根型、幂函数型、对数型与 Huber 型的 PSNR
 增益均不超过 $0.001$ dB，平台结论成立；对数余弦型再提高 $0.046$ dB 与
 $0.022$ dB，增量较前一级（$+0.066$ dB 与 $+0.036$ dB）继续收窄、趋于渐近，
 即便计入该增益其排序仍不变，验证数据见支撑材料。
 
-\subsection{与文献结果的对照检验}
-
-本文结果与公开文献的对照情况见表~\ref{tab:p1check}，五项对照均与文献结论一致
-或更优。
-
-\begin{table}[!htbp]
-  \centering\small
-  \caption{与文献结果的对照检验}
-  \label{tab:p1check}
-  \begin{tabular}{p{0.40\textwidth}p{0.27\textwidth}p{0.20\textwidth}}
-    \toprule[1.5pt]
-    对照项 & 文献值 & 本文值 \\
-    \midrule[1pt]
-    Lena 30\% 噪声 PSNR\cite{liu2025} & 36.99 dB & 38.35 dB \\
-    Lena 30\%/50\% PSNR，$\sqrt{t^{2}+100}$、$\beta=10$\cite{cai2007}
-      & 36.4--36.6 / 32.9--33.0 dB & 38.35 / 34.71 dB \\
-    稀疏重构去偏置误差量级\cite{figueiredo2008} & 相对误差约 0.02--0.03 & 0.0265 \\
-    $\beta$ 无关性\cite{chan2005} & 参数足够大时极小值不变 & $\beta\ge40$ 平台 \\
-    第二阶段数据项可删\cite{chan2005} & 删除后结果不变 & PSNR 差 0.009 dB \\
-    \bottomrule[1.5pt]
-  \end{tabular}
-\end{table}
-
-其中 Lena 30\% 噪声 38.35 dB 对文献\cite{liu2025}报告值 36.99 dB 的提升来自两
-个来源：检测阶段采用文献\cite{chan2005}的两条件候选集定义把误检率压缩到 $1\%$
-以内，以及势函数参数与正则权重平台上的更优配置。与 Cai 等人\cite{cai2007}的
-对照是口径最接近的一项：该文在相同两阶段框架与同种平方根型势函数下报告 Lena
-30\%/50\% 噪声恢复 PSNR 为 36.4--36.6 dB 与 32.9--33.0 dB，本文同口径结果高出
-约 1.7--1.9 dB；需注意双方参数配置不同（该文取 $\varphi=\sqrt{t^{2}+100}$、
-$\beta=10$，本文经标定取 $\alpha=300$、$\beta=40$），这一差异本身也印证了
-问题二中``参数平台选择影响恢复质量''的结论。
-
 \subsection{随机性与实现的鲁棒性}
 
 同一图像同一噪声等级下，三组随机种子（2026、7、42）的 PSNR 标准差为
 0.005--0.42 dB，说明算法对噪声的随机实现不敏感。实现层面还需说明两点：其一，
-求解器对 BB 步长中曲率信息失效的情况按文献惯例取 $\alpha_{\max}$，并对投影弧
+求解器对 BB 步长中曲率信息失效的情况取 $\alpha_{\max}$，并对投影弧
 方向做下降性检查，避免数值保护分支造成停滞；其二，梯度与目标函数的求值经过
 有限差分校验，问题一三种光滑函数与问题二五种势函数（20 样本）的最大相对误差
 均不超过 $6\times10^{-5}$，计算正确性可靠。
@@ -1011,19 +980,18 @@ $\beta=10$，本文经标定取 $\alpha=300$、$\beta=40$），这一差异本�
 的泛函改写、光滑化与盒约束化，逐步建立起可求解的凸规划，每一步都有明确的物理
 或数学依据；梯度计算仅依赖四邻域查值，复杂度可控且便于实现。
 
-第二，模型与文献高度对齐。检测阶段采用文献\cite{chan2005}对噪声候选集的原
-定义，把误检率压缩到 $1\%$ 以内；势函数的光滑化分别取自文献
-\cite{wu2021,chen2010}的光滑函数族与 $l_p$ 型光滑处理；停止准则与初值选择均
-对应文献惯例。这使得本文结果与文献结论具备直接可比性，对表中对照项的逐项检验
-全部通过。
+第二，模型设计中的关键步骤均给出明确的数学定义。检测阶段采用两条件候选集，
+把误检率压缩到 $1\%$ 以内；势函数采用光滑函数族与 $\ell_p$ 型光滑处理，
+停止准则和初值选择也给出具体实现口径，便于复核模型与计算结果。
 
 第三，实验设计遵循严谨的对比协议。问题一设置了基线方法、求解器、光滑参数与
-数据项多个维度的对照，问题二采用独立标定与样本外验证，问题三引入``达到相同
-目标值''的统一口径，所有评价指标均在多随机种子下取均值，结论经得起复核。
+数据项多个维度的对照，问题二采用独立标定并补充剔除标定图像的样本外汇总，
+问题三引入``达到相同目标值''的统一口径，主要评价指标均在多随机种子下汇总，
+便于复核结果的稳定性。
 
 \subsection{模型的缺点}
 
-第一，光滑参数 $\mu$ 与正则权重 $\beta$ 的取值依赖实验标定。本文通过扫描确定
+第一，光滑参数 $\mu$ 与正则权重 $\beta$ 的取值依赖实验标定。问题一通过扫描确定
 $\mu=1$ 与 $\beta\ge40$ 的合适区间，但缺乏自适应的在线选择准则，对不同类型的
 图像或噪声水平可能需要重新标定。
 
@@ -1052,7 +1020,7 @@ $\mu=1$ 与 $\beta\ge40$ 的合适区间，但缺乏自适应的在线选择准�
   Figueiredo M A T, Nowak R D, Wright S J. Gradient Projection for Sparse
   Reconstruction: Application to Compressed Sensing and Other Inverse
   Problems[J]. IEEE Journal of Selected Topics in Signal Processing,
-  2008, 1(4): 586-597.
+  2007, 1(4): 586-597. DOI: 10.1109/JSTSP.2007.910281.
   \bibitem[2]{chan2005}
   Chan R H, Ho C W, Nikolova M. Salt-and-pepper noise removal by
   median-type noise detectors and detail-preserving regularization[J].
@@ -1156,7 +1124,7 @@ def adaptive_median_filter(y, r=0.3, wmax=None, s_min=0.0, s_max=255.0):
     y = np.asarray(y, dtype=np.float64)
     M, N = y.shape
     if wmax is None:
-        wmax = w_max_for_noise_level(r)          # 按噪声等级查文献表 I
+        wmax = w_max_for_noise_level(r)          # 按噪声等级设定最大窗口
     smin = np.full((M, N), np.nan)               # 各像素最终窗口统计
     smed = np.full((M, N), np.nan)
     smax = np.full((M, N), np.nan)
@@ -1179,7 +1147,7 @@ def adaptive_median_filter(y, r=0.3, wmax=None, s_min=0.0, s_max=255.0):
     exhausted = active.copy()                    # 从未获得满足窗口的像素
     amf_cand = exhausted | ~((smin < y) & (y < smax))   # AMF 判为噪声的像素
     y_amf = y.copy(); y_amf[amf_cand] = smed[amf_cand]  # 候选像素用中值替换
-    # 文献 Algorithm III 两条件候选集: y 为端点值 且 AMF 输出了替换值
+    # 两条件候选集: y 为端点值且 AMF 输出了替换值
     cand = ((y == s_min) | (y == s_max)) & (y_amf != y)
     return cand, y_amf, dict(smin=smin, smed=smed, smax=smax)
 \end{lstlisting}
@@ -1248,7 +1216,8 @@ def gpsr_bb(model, u0, mu=1e-3, lo=0.0, hi=255.0, tolP=1e-2, tolX=1e-10,
     model._set_mu(mu)
     z = np.asarray(u0, dtype=np.float64).copy()
     g = model.gradient(z)
-    a = float(np.clip(1.0 / max(1.0, float(np.max(np.abs(g)))), amin, amax))
+    a0 = 1.0 / max(1.0, float(np.max(np.abs(g))))
+    a = float(min(amax, max(amin, a0)))
     hist_f = [model.value(z)]; hist_gap = [projection_gap(z, g, lo, hi)]
     converged = False
     for it in range(1, maxit + 1):
